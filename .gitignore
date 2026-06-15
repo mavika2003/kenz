@@ -1,0 +1,8 @@
+.DS_Store
+*.pem
+.env*
+
+# Next.js app
+kenz-web/node_modules/
+kenz-web/.next/
+kenz-web/out/
