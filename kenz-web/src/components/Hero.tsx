@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { ProtectedChatButton } from "./ProtectedChatLink";
 
 export default function Hero() {
   return (
@@ -56,12 +57,9 @@ export default function Hero() {
           >
             Flip through free
           </Link>
-          <Link
-            href="#chat"
-            className="rounded-full border-2 border-black bg-black px-7 py-3.5 text-base font-bold text-white shadow-[4px_4px_0_#ff6a00] transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_#ff6a00]"
-          >
+          <ProtectedChatButton variant="large" mode="signup">
             Chat with a Kenzr
-          </Link>
+          </ProtectedChatButton>
         </div>
       </div>
     </header>

@@ -11,21 +11,42 @@ export default function DubaiMap() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    if (!containerRef.current || mapRef.current) return;
+    const container = containerRef.current;
+    if (!container) return;
 
-    let map: import("leaflet").Map;
+    let cancelled = false;
 
     const init = async () => {
       const L = (await import("leaflet")).default;
       await import("leaflet/dist/leaflet.css");
 
-      map = L.map(containerRef.current!, {
+      if (cancelled || !containerRef.current) return;
+
+      // React Strict Mode / fast refresh can remount before async init finishes.
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+        markersRef.current = [];
+      }
+
+      const el = containerRef.current;
+      if ((el as HTMLElement & { _leaflet_id?: number })._leaflet_id != null) {
+        el.replaceChildren();
+        delete (el as HTMLElement & { _leaflet_id?: number })._leaflet_id;
+      }
+
+      const map = L.map(el, {
         center: [25.15, 55.22],
         zoom: 11,
         zoomControl: true,
         scrollWheelZoom: false,
         attributionControl: false,
       });
+
+      if (cancelled) {
+        map.remove();
+        return;
+      }
 
       L.tileLayer(
         "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
@@ -65,12 +86,20 @@ export default function DubaiMap() {
       setReady(true);
     };
 
-    init();
+    void init();
 
     return () => {
+      cancelled = true;
       mapRef.current?.remove();
       mapRef.current = null;
       markersRef.current = [];
+
+      const el = containerRef.current;
+      if (el) {
+        el.replaceChildren();
+        delete (el as HTMLElement & { _leaflet_id?: number })._leaflet_id;
+      }
+
       setReady(false);
     };
   }, []);

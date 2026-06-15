@@ -1,0 +1,28 @@
+# Deploy kenz-api on Render (free tier): https://render.com
+# 1. Push this repo to GitHub
+# 2. Render → New → Blueprint → connect repo
+# 3. Set LLM_API_KEY in the Render dashboard (never commit it)
+services:
+  - type: web
+    name: kenz-api
+    runtime: python
+    rootDir: kenz-api
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: LLM_API_KEY
+        sync: false
+      - key: LLM_API_URL
+        value: https://api.groq.com/openai/v1/chat/completions
+      - key: LLM_MODEL
+        value: llama-3.3-70b-versatile
+      - key: ALLOWED_ORIGINS
+        value: http://localhost:3000,https://gokenz.com,https://www.gokenz.com
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: SUPABASE_URL
+        value: https://zynadcpqsmxulhkcwzrl.supabase.co
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false

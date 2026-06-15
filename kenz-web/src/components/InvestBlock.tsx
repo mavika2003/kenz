@@ -1,4 +1,5 @@
 import DubaiMap from "./DubaiMap";
+import { ProtectedChatButton } from "./ProtectedChatLink";
 
 export default function InvestBlock() {
   return (
@@ -20,7 +21,7 @@ export default function InvestBlock() {
           </div>
         </div>
 
-        <div className="book-page-panel reveal relative flex min-h-[380px] flex-col justify-center overflow-hidden p-8 md:min-h-[480px] md:p-10 lg:p-14">
+        <div className="book-page-panel reveal relative flex min-h-[380px] flex-col justify-center p-8 md:min-h-[480px] md:p-10 lg:p-14">
           <div className="book-page-grain" aria-hidden="true" />
 
           <div className="book-page-polaroid book-page-polaroid--1" aria-hidden="true">
@@ -33,7 +34,7 @@ export default function InvestBlock() {
             <span>🌮</span>
           </div>
 
-          <div className="relative z-10 mx-auto w-full max-w-md">
+          <div className="relative z-10 mx-auto w-full max-w-md text-left">
             <p className="font-[family-name:var(--font-caveat)] text-xl text-orange-deep">
               skip the brochure ✦
             </p>
@@ -46,12 +47,11 @@ export default function InvestBlock() {
               Real residents. Real answers. The scrapbook is free — a Kenzr in your
               pocket is where it gets personal.
             </p>
-            <a
-              href="#chat"
-              className="mt-7 inline-flex rounded-full border-2 border-black bg-black px-7 py-3.5 text-sm font-bold text-white shadow-[4px_4px_0_#ff6a00] transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_#ff6a00]"
-            >
-              Get a Kenzr →
-            </a>
+            <div className="mt-7 pr-1 pb-1">
+              <ProtectedChatButton variant="large" mode="signup">
+                Get a Kenzr →
+              </ProtectedChatButton>
+            </div>
             <p className="mt-5 font-[family-name:var(--font-caveat)] text-lg text-black/50">
               pinned by real locals 📌
             </p>
