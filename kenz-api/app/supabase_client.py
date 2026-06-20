@@ -289,3 +289,49 @@ def user_record_to_response(record: dict[str, Any]) -> dict[str, Any]:
         "picture": record.get("picture"),
         "username": record.get("username"),
     }
+
+
+async def save_trip_plan(
+    settings: Settings,
+    row: dict[str, Any],
+) -> dict[str, Any]:
+    row["updated_at"] = _now_iso()
+    url = f"{settings.supabase_url}/rest/v1/trip_plans"
+
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        response = await client.post(
+            url,
+            headers=_write_headers(settings),
+            json=row,
+        )
+
+    if response.status_code >= 400:
+        raise SupabaseError(response.status_code, response.text)
+
+    data = response.json()
+    if isinstance(data, list) and data:
+        return data[0]
+    if isinstance(data, dict):
+        return data
+    raise SupabaseError(502, "Could not save trip plan.")
+
+
+async def get_trip_plan_by_token(
+    settings: Settings,
+    share_token: str,
+) -> Optional[dict[str, Any]]:
+    url = f"{settings.supabase_url}/rest/v1/trip_plans"
+    params = {
+        "share_token": f"eq.{share_token}",
+        "select": "*",
+        "limit": "1",
+    }
+
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        response = await client.get(url, params=params, headers=_read_headers(settings))
+
+    if response.status_code >= 400:
+        raise SupabaseError(response.status_code, response.text)
+
+    rows = response.json()
+    return rows[0] if rows else None

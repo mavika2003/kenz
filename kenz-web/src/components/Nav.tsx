@@ -9,6 +9,7 @@ const links = [
   { href: "/#who", label: "Who we are" },
   { href: "/#book", label: "Scrapbook" },
   { href: "/#chapters", label: "Chapters" },
+  { href: "/planner", label: "Plan Trip" },
 ];
 
 export default function Nav() {

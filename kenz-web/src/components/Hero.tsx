@@ -57,6 +57,12 @@ export default function Hero() {
           >
             Flip through free
           </Link>
+          <Link
+            href="/planner"
+            className="rounded-full border-2 border-black bg-black px-7 py-3.5 text-base font-bold text-white shadow-[4px_4px_0_#f59e0b] transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_#f59e0b]"
+          >
+            Plan Your Trip ✨
+          </Link>
           <ProtectedChatButton variant="large" mode="signup">
             Chat with a Kenzr
           </ProtectedChatButton>

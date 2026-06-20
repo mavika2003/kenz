@@ -20,6 +20,8 @@ from app.config import (
     ChatResponse,
     LoginRequest,
     RegisterRequest,
+    TripPlanRequest,
+    TripPlanResponse,
     UserResponse,
     get_settings,
 )
@@ -30,12 +32,14 @@ from app.supabase_client import (
     create_email_user,
     ensure_can_call_llm,
     get_chat_messages,
+    get_trip_plan_by_token,
     get_user_by_email,
     get_user_by_email_or_username,
     get_user_by_id,
     get_user_by_username,
     increment_llm_calls,
     save_chat_message,
+    save_trip_plan,
     touch_last_login,
     usage_from_record,
     user_record_to_response,
@@ -161,6 +165,70 @@ async def chat_history(user: dict = Depends(get_current_user)) -> ChatHistoryRes
         return ChatHistoryResponse(messages=messages, **usage)
     except SupabaseError as exc:
         raise HTTPException(status_code=exc.status_code, detail=exc.detail) from exc
+
+
+def get_optional_user(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme),
+) -> Optional[dict]:
+    if credentials is None or credentials.scheme.lower() != "bearer":
+        return None
+    try:
+        payload = decode_access_token(credentials.credentials, settings)
+    except AuthError:
+        return None
+    return user_from_payload(payload)
+
+
+@app.post("/planner/plans", response_model=TripPlanResponse)
+async def create_trip_plan(
+    request: TripPlanRequest,
+    user: Optional[dict] = Depends(get_optional_user),
+) -> TripPlanResponse:
+    row = {
+        "user_id": user.get("id") if user else None,
+        "destination": request.destination,
+        "travel_style": request.travel_style,
+        "duration": request.duration,
+        "travelers": request.travelers,
+        "budget_total": request.budget_total,
+        "accommodation": request.accommodation,
+        "transport": request.transport,
+        "start_date": request.start_date,
+        "plan_data": request.plan_data,
+        "budget_breakdown": request.budget_breakdown,
+    }
+
+    try:
+        record = await save_trip_plan(settings, row)
+    except SupabaseError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=exc.detail) from exc
+
+    share_token = record["share_token"]
+    origin = settings.origin_list[0] if settings.origin_list else "http://localhost:3000"
+    return TripPlanResponse(
+        id=record["id"],
+        share_token=share_token,
+        share_url=f"{origin}/planner?plan={share_token}",
+    )
+
+
+@app.get("/planner/plans/{share_token}")
+async def get_trip_plan(share_token: str) -> dict:
+    try:
+        record = await get_trip_plan_by_token(settings, share_token)
+    except SupabaseError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=exc.detail) from exc
+
+    if not record:
+        raise HTTPException(status_code=404, detail="Trip plan not found.")
+
+    return {
+        "id": record["id"],
+        "share_token": record["share_token"],
+        "plan_data": record.get("plan_data") or {},
+        "budget_breakdown": record.get("budget_breakdown") or {},
+        "budget_total": record.get("budget_total"),
+    }
 
 
 @app.post("/chat", response_model=ChatResponse)

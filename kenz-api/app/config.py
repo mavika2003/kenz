@@ -98,3 +98,22 @@ class RegisterRequest(BaseModel):
 class LoginRequest(BaseModel):
     email_or_username: str = Field(min_length=3, max_length=255)
     password: str = Field(min_length=8, max_length=128)
+
+
+class TripPlanRequest(BaseModel):
+    destination: Optional[str] = None
+    travel_style: Optional[str] = None
+    duration: int = Field(default=7, ge=1, le=60)
+    travelers: int = Field(default=1, ge=1, le=20)
+    budget_total: Optional[int] = None
+    accommodation: Optional[str] = None
+    transport: Optional[str] = None
+    start_date: Optional[str] = None
+    plan_data: dict = Field(default_factory=dict)
+    budget_breakdown: Optional[dict] = None
+
+
+class TripPlanResponse(BaseModel):
+    id: str
+    share_token: str
+    share_url: str
