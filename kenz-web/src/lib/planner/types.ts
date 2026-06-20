@@ -59,6 +59,7 @@ export interface PlanState {
   transport: TransportMode | null;
   startDate: Date | null;
   completedMilestones: string[];
+  activeMilestoneId?: string | null;
 }
 
 export interface DubaiTravelData {

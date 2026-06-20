@@ -335,3 +335,53 @@ async def get_trip_plan_by_token(
 
     rows = response.json()
     return rows[0] if rows else None
+
+
+async def get_latest_trip_plan_for_user(
+    settings: Settings,
+    user_id: str,
+) -> Optional[dict[str, Any]]:
+    url = f"{settings.supabase_url}/rest/v1/trip_plans"
+    params = {
+        "user_id": f"eq.{user_id}",
+        "select": "*",
+        "order": "updated_at.desc",
+        "limit": "1",
+    }
+
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        response = await client.get(url, params=params, headers=_read_headers(settings))
+
+    if response.status_code >= 400:
+        raise SupabaseError(response.status_code, response.text)
+
+    rows = response.json()
+    return rows[0] if rows else None
+
+
+async def update_trip_plan(
+    settings: Settings,
+    plan_id: str,
+    row: dict[str, Any],
+) -> dict[str, Any]:
+    row["updated_at"] = _now_iso()
+    url = f"{settings.supabase_url}/rest/v1/trip_plans"
+    params = {"id": f"eq.{plan_id}"}
+
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        response = await client.patch(
+            url,
+            params=params,
+            headers=_write_headers(settings),
+            json=row,
+        )
+
+    if response.status_code >= 400:
+        raise SupabaseError(response.status_code, response.text)
+
+    data = response.json()
+    if isinstance(data, list) and data:
+        return data[0]
+    if isinstance(data, dict):
+        return data
+    raise SupabaseError(502, "Could not update trip plan.")

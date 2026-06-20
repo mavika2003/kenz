@@ -4,14 +4,19 @@ import { useEffect, type ReactNode } from "react";
 import { useAuth } from "./AuthProvider";
 import { loginPageUrl } from "@/lib/auth";
 
-export default function RequireAuth({ children }: { children: ReactNode }) {
+type RequireAuthProps = {
+  children: ReactNode;
+  next?: string;
+};
+
+export default function RequireAuth({ children, next = "/chat" }: RequireAuthProps) {
   const { user, loading } = useAuth();
 
   useEffect(() => {
     if (!loading && !user) {
-      window.location.href = loginPageUrl("login", "/chat");
+      window.location.href = loginPageUrl("login", next);
     }
-  }, [loading, user]);
+  }, [loading, next, user]);
 
   if (loading) {
     return (

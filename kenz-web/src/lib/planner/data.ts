@@ -49,6 +49,7 @@ export const INITIAL_PLAN_STATE: PlanState = {
   transport: null,
   startDate: null,
   completedMilestones: [],
+  activeMilestoneId: null,
 };
 
 export const DUBAI_DATA: DubaiTravelData = {

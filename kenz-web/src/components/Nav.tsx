@@ -3,13 +3,13 @@
 import Link from "next/link";
 import { useAuth } from "./AuthProvider";
 import PillButton from "./PillButton";
+import { ProtectedPlannerLink } from "./ProtectedPlannerLink";
 import { loginPageUrl } from "@/lib/auth";
 
 const links = [
   { href: "/#who", label: "Who we are" },
   { href: "/#book", label: "Scrapbook" },
   { href: "/#chapters", label: "Chapters" },
-  { href: "/planner", label: "Plan Trip" },
 ];
 
 export default function Nav() {
@@ -24,23 +24,25 @@ export default function Nav() {
     <nav className="sticky top-0 z-50 border-b-2 border-black bg-white/95 backdrop-blur-sm">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
         <Link
-          href={user ? "/chat" : "/"}
+          href="/"
           className="shrink-0 font-[family-name:var(--font-anton)] text-2xl tracking-wide text-black"
         >
           KEN<span className="text-white [-webkit-text-stroke:1.5px_#141210]">Z</span>
         </Link>
 
         <div className="hidden items-center gap-8 md:flex">
-          {!user &&
-            links.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="text-sm font-medium text-black/80 transition-colors hover:text-orange"
-              >
-                {link.label}
-              </Link>
-            ))}
+          {links.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="text-sm font-medium text-black/80 transition-colors hover:text-orange"
+            >
+              {link.label}
+            </Link>
+          ))}
+          <ProtectedPlannerLink className="text-sm font-medium text-black/80 transition-colors hover:text-orange">
+            Plan Trip
+          </ProtectedPlannerLink>
         </div>
 
         <div className="flex shrink-0 items-center gap-2 sm:gap-3">
@@ -49,6 +51,9 @@ export default function Nav() {
               <span className="hidden max-w-[8rem] truncate text-sm font-medium text-black/80 sm:inline">
                 {user.name}
               </span>
+              <Link href="/planner" className={pillLinkClass("secondary")}>
+                Plan Trip
+              </Link>
               <Link href="/chat" className={pillLinkClass("primary")}>
                 Open chat
               </Link>
