@@ -1,0 +1,48 @@
+---
+description: KenZ cinematic video generation rules for Higgsfield MCP and hero backgrounds
+globs:
+  - "**/Hero.tsx"
+  - "**/Cinematic*.tsx"
+  - "**/cinematic-scenes.ts"
+  - "public/videos/**"
+---
+
+# KenZ Video Branding
+
+When generating or requesting background videos via Higgsfield MCP for KenZ:
+
+## Camera & motion
+- Always use slow, deliberate camera movements. No fast pans, whip zooms, or shaky-cam.
+- Prefer stable aerial drift, locked macro, or low-angle glide over handheld energy.
+- Motion must be loop-friendly: start and end frames should feel visually compatible.
+
+## Lighting & grade
+- Natural light only: golden hour, soft morning, or blue-hour dusk.
+- Warm amber for urban/desert; soft diffused for culture/lifestyle.
+- Cinematic travel documentary grade. High resolution, minimal noise.
+
+## Composition for web backgrounds
+- Reserve negative space (sky, sand, blur) for headline overlay legibility.
+- Avoid chaotic crowds, rapid texture flicker, or busy foreground motion.
+- 16:9 aspect ratio. Target 15 seconds. Export to `public/videos/hero-{urban|culture|desert}.mp4`.
+
+## Prompt template
+```
+Generate a cinematic 15-second background video for a travel startup website.
+Subject: [scene-specific subject]
+Camera: [slow stable instruction]
+Lighting: [golden hour / soft morning]
+Style: Hyper-realistic, 8k, premium travel documentary, very smooth motion
+Mood: Serene, aspirational, premium
+```
+
+## Scene IDs (match `src/data/cinematic-scenes.ts`)
+- `urban` → `hero-urban.mp4` — Dubai skyline, golden hour aerial
+- `culture` → `hero-culture.mp4` — gahwa pour, macro, morning light
+- `desert` → `hero-desert.mp4` — dunes at sunrise, floating aerial
+
+## Higgsfield workflow
+1. Call `models_explore` with `action: recommend` for text-to-video cinematic backgrounds.
+2. Prefer `kling3_0_turbo` or recommended model for text-only hero loops.
+3. Use `aspect_ratio: "16:9"`, `duration: 15`.
+4. After generation, download to `kenz-web/public/videos/` and keep `fallbackSrc` as CDN backup.

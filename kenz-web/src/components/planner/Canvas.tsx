@@ -7,6 +7,8 @@ import StylePanel from "./panels/StylePanel";
 import TimelinePanel from "./panels/TimelinePanel";
 import LogisticsPanel from "./panels/LogisticsPanel";
 import ReviewPanel from "./panels/ReviewPanel";
+import PlannerButton from "./ui/PlannerButton";
+import { easePremium } from "./ui/theme";
 
 interface CanvasProps {
   activeMilestone: Milestone;
@@ -20,21 +22,9 @@ interface CanvasProps {
 }
 
 const panelVariants = {
-  enter: {
-    opacity: 0,
-    x: 20,
-    scale: 0.98,
-  },
-  center: {
-    opacity: 1,
-    x: 0,
-    scale: 1,
-  },
-  exit: {
-    opacity: 0,
-    x: -20,
-    scale: 0.98,
-  },
+  enter: { opacity: 0, y: 20, filter: "blur(4px)" },
+  center: { opacity: 1, y: 0, filter: "blur(0px)" },
+  exit: { opacity: 0, y: -12, filter: "blur(4px)" },
 };
 
 export default function Canvas({
@@ -47,36 +37,29 @@ export default function Canvas({
   onSaveTrip,
   isSaving = false,
 }: CanvasProps) {
+  const isDisabled =
+    isSaving ||
+    (activeMilestone.id === "destination" && !planState.destination) ||
+    (activeMilestone.id === "style" && !planState.travelStyle) ||
+    (activeMilestone.id === "logistics" && (!planState.accommodation || !planState.transport));
+
   return (
-    <div className="h-full flex flex-col">
-      {/* Header */}
-      <div className="flex items-center justify-between px-8 py-6 border-b-2 border-[#141210] bg-white">
+    <div className="flex h-full flex-col">
+      <div className="flex items-center justify-between border-b border-black/[0.06] px-6 py-5 md:px-8">
         <motion.div
           key={activeMilestone.id}
-          initial={{ opacity: 0, y: -10 }}
+          initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
+          transition={{ duration: 0.35, ease: easePremium }}
         >
-          <div className="flex items-center gap-3">
-            <span className="text-2xl">{activeMilestone.icon}</span>
-            <div>
-              <h2 className="text-lg font-bold text-[#141210] uppercase tracking-wide">
-                {activeMilestone.label}
-              </h2>
-              <p className="text-sm text-[#141210]/50">{activeMilestone.description}</p>
-            </div>
-          </div>
+          <h2 className="font-[family-name:var(--font-anton)] text-xl uppercase text-ink md:text-2xl">
+            {activeMilestone.label}
+          </h2>
+          <p className="mt-1 text-sm text-ink/55">{activeMilestone.description}</p>
         </motion.div>
-
-        <div className="flex items-center gap-4">
-          <span className="text-xs text-[#141210]/40 uppercase tracking-wider font-medium">
-            Step {["destination", "style", "timeline", "logistics", "review"].indexOf(activeMilestone.id) + 1} of 5
-          </span>
-        </div>
       </div>
 
-      {/* Content Area */}
-      <div className="flex-1 overflow-hidden relative">
+      <div className="relative min-h-0 flex-1 overflow-hidden">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeMilestone.id}
@@ -84,8 +67,8 @@ export default function Canvas({
             initial="enter"
             animate="center"
             exit="exit"
-            transition={{ duration: 0.35, ease: [0.23, 1, 0.32, 1] }}
-            className="h-full overflow-y-auto p-8"
+            transition={{ duration: 0.4, ease: easePremium }}
+            className="h-full overflow-y-auto px-6 py-8 md:px-8"
           >
             {activeMilestone.id === "destination" && (
               <DestinationPanel planState={planState} updatePlan={updatePlan} />
@@ -112,30 +95,13 @@ export default function Canvas({
         </AnimatePresence>
       </div>
 
-      {/* Footer Actions */}
-      <div className="px-8 py-6 border-t-2 border-[#141210] flex items-center justify-between bg-white">
-        <div />
-        <motion.button
-          onClick={onComplete}
-          disabled={
-            isSaving ||
-            (activeMilestone.id === "destination" && !planState.destination) ||
-            (activeMilestone.id === "style" && !planState.travelStyle) ||
-            (activeMilestone.id === "logistics" && (!planState.accommodation || !planState.transport))
-          }
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          className="px-6 py-3 bg-[#ff6a00] text-white font-bold rounded-lg border-2 border-[#141210] shadow-[3px_3px_0_#141210]
-                     disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300
-                     hover:shadow-[5px_5px_0_#141210] hover:-translate-y-0.5"
-        >
-          {isSaving
-            ? "Saving..."
-            : activeMilestone.id === "review"
-            ? "Export Plan"
-            : "Continue"}
-        </motion.button>
-      </div>
+      {activeMilestone.id !== "review" && (
+        <div className="flex justify-end border-t border-black/[0.06] px-6 py-5 md:px-8">
+          <PlannerButton onClick={onComplete} disabled={isDisabled}>
+            {isSaving ? "Saving..." : "Continue"}
+          </PlannerButton>
+        </div>
+      )}
     </div>
   );
 }

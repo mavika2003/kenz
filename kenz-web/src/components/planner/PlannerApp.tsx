@@ -6,6 +6,7 @@ import Roadmap from "@/components/planner/Roadmap";
 import Canvas from "@/components/planner/Canvas";
 import ContextualFeed from "@/components/planner/ContextualFeed";
 import PlannerNav from "@/components/planner/PlannerNav";
+import PlannerBezel from "@/components/planner/ui/PlannerBezel";
 import { PlanState, Milestone } from "@/lib/planner/types";
 import { INITIAL_PLAN_STATE, MILESTONES, calculateBudget } from "@/lib/planner/data";
 import { downloadPlanAsText, printPlanAsPdf } from "@/lib/planner/export";
@@ -16,11 +17,25 @@ import {
   resolveActiveMilestone,
   saveTripPlan,
 } from "@/lib/plannerApi";
+import { easePremium } from "@/components/planner/ui/theme";
 
 type ExportStatus = {
   message: string;
   type: "success" | "error" | "info";
 } | null;
+
+function PlannerSkeleton() {
+  return (
+    <div className="flex min-h-[100dvh] flex-col bg-canvas">
+      <div className="h-14 border-b border-black/[0.06] bg-white" />
+      <div className="flex flex-1 gap-4 p-4 lg:p-6">
+        <div className="hidden w-64 animate-pulse rounded-[1.25rem] bg-black/[0.04] lg:block" />
+        <PlannerBezel className="flex-1" innerClassName="min-h-[60vh] animate-pulse p-8" />
+        <div className="hidden w-80 animate-pulse rounded-[1.25rem] bg-black/[0.04] xl:block" />
+      </div>
+    </div>
+  );
+}
 
 export default function PlannerApp() {
   const [planState, setPlanState] = useState<PlanState>(INITIAL_PLAN_STATE);
@@ -90,7 +105,7 @@ export default function PlannerApp() {
       await persistPlan();
       downloadPlanAsText(planState);
       setExportStatus({
-        message: "Plan saved to your account. Downloading a copy now.",
+        message: "Plan saved. Download started.",
         type: "success",
       });
     } catch (error) {
@@ -104,7 +119,7 @@ export default function PlannerApp() {
   const handleDownloadPdf = () => {
     printPlanAsPdf(planState);
     setExportStatus({
-      message: "Print dialog opened — choose Save as PDF to export.",
+      message: "Print dialog opened. Choose Save as PDF.",
       type: "info",
     });
   };
@@ -117,7 +132,7 @@ export default function PlannerApp() {
       const saved = await persistPlan();
       await navigator.clipboard.writeText(saved.share_url);
       setExportStatus({
-        message: "Share link copied. Plan saved to your account.",
+        message: "Share link copied to clipboard.",
         type: "success",
       });
     } catch (error) {
@@ -130,15 +145,12 @@ export default function PlannerApp() {
 
   const handleSaveTrip = async () => {
     setIsSaving(true);
-    setExportStatus({ message: "Saving to My Trips...", type: "info" });
+    setExportStatus({ message: "Saving trip...", type: "info" });
 
     try {
       markMilestoneComplete("review");
       await persistPlan();
-      setExportStatus({
-        message: "Trip saved to your account.",
-        type: "success",
-      });
+      setExportStatus({ message: "Trip saved to your account.", type: "success" });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Could not save trip.";
       setExportStatus({ message, type: "error" });
@@ -188,75 +200,56 @@ export default function PlannerApp() {
     if (!isPlannerApiConfigured()) return;
 
     const timer = window.setTimeout(() => {
-      void persistPlan().catch(() => {
-        // Silent fail for background auto-save
-      });
+      void persistPlan().catch(() => {});
     }, 1200);
 
     return () => window.clearTimeout(timer);
   }, [planState, activeMilestone, isLoading, persistPlan]);
 
-  if (isLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-[#fbf3e4] text-[#141210]">
-        <p className="text-sm font-medium">Loading your trip plan…</p>
-      </div>
-    );
-  }
+  if (isLoading) return <PlannerSkeleton />;
 
   return (
-    <div className="h-screen w-full overflow-hidden bg-[#fbf3e4] text-[#141210] font-sans">
-      <div
-        className="fixed inset-0 pointer-events-none opacity-30"
-        style={{
-          backgroundImage: `repeating-linear-gradient(
-            0deg,
-            transparent,
-            transparent 31px,
-            rgba(20, 18, 16, 0.03) 31px,
-            rgba(20, 18, 16, 0.03) 32px
-          )`,
-        }}
-      />
+    <div className="flex min-h-[100dvh] flex-col bg-canvas font-sans text-ink">
+      <PlannerNav />
 
-      <div className="relative z-10 h-full flex flex-col">
-        <PlannerNav />
+      {exportStatus && (
+        <div
+          className={`border-b px-6 py-3 text-sm font-medium ${
+            exportStatus.type === "success"
+              ? "border-emerald-200 bg-emerald-50 text-emerald-900"
+              : exportStatus.type === "error"
+                ? "border-red-200 bg-red-50 text-red-800"
+                : "border-orange/20 bg-orange/10 text-ink"
+          }`}
+        >
+          {exportStatus.message}
+        </div>
+      )}
 
-        {exportStatus && (
-          <div
-            className={`px-6 py-3 text-sm font-medium border-b-2 border-[#141210] ${
-              exportStatus.type === "success"
-                ? "bg-[#10b981]/15 text-[#141210]"
-                : exportStatus.type === "error"
-                ? "bg-red-100 text-red-800"
-                : "bg-[#ffd23f]/30 text-[#141210]"
-            }`}
-          >
-            {exportStatus.message}
-          </div>
-        )}
-
-        <div className="flex flex-1 min-h-0">
-          <motion.aside
-            initial={{ x: -20, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
-            className="w-[20%] min-w-[240px] max-w-[320px] h-full border-r-2 border-[#141210] bg-white"
-          >
+      <div className="flex min-h-0 flex-1 flex-col gap-4 p-4 lg:flex-row lg:gap-5 lg:p-6">
+        <motion.aside
+          initial={{ opacity: 0, x: -16 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6, ease: easePremium }}
+          className="w-full shrink-0 lg:w-[260px] xl:w-[280px]"
+        >
+          <PlannerBezel innerClassName="h-full min-h-[220px] lg:min-h-0">
             <Roadmap
               milestones={MILESTONES}
               activeMilestone={activeMilestone}
               completedMilestones={planState.completedMilestones}
               onSelect={setActiveMilestone}
             />
-          </motion.aside>
+          </PlannerBezel>
+        </motion.aside>
 
-          <motion.main
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="flex-1 h-full overflow-hidden bg-white"
-          >
+        <motion.main
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.08, ease: easePremium }}
+          className="flex min-h-0 min-w-0 flex-1 flex-col"
+        >
+          <PlannerBezel className="h-full" innerClassName="flex h-full min-h-[480px] flex-col">
             <Canvas
               activeMilestone={activeMilestone}
               planState={planState}
@@ -267,17 +260,19 @@ export default function PlannerApp() {
               onSaveTrip={handleSaveTrip}
               isSaving={isSaving}
             />
-          </motion.main>
+          </PlannerBezel>
+        </motion.main>
 
-          <motion.aside
-            initial={{ x: 20, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
-            className="w-[25%] min-w-[300px] max-w-[400px] h-full border-l-2 border-[#141210] bg-[#fbf3e4]"
-          >
+        <motion.aside
+          initial={{ opacity: 0, x: 16 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6, delay: 0.12, ease: easePremium }}
+          className="w-full shrink-0 xl:w-[320px]"
+        >
+          <PlannerBezel innerClassName="h-full min-h-[280px] xl:min-h-0">
             <ContextualFeed planState={planState} />
-          </motion.aside>
-        </div>
+          </PlannerBezel>
+        </motion.aside>
       </div>
     </div>
   );

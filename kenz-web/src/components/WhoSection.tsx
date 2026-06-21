@@ -1,38 +1,50 @@
+import MotionReveal from "./MotionReveal";
+import BezelCard from "./ui/BezelCard";
+
 export default function WhoSection() {
   return (
-    <section id="who" className="border-y-[3px] border-black bg-white">
-      <div className="mx-auto grid max-w-6xl gap-12 px-6 py-20 md:grid-cols-2 md:items-center md:py-28">
-        <div>
-          <p className="reveal font-[family-name:var(--font-caveat)] text-2xl text-orange-deep">
-            so, who are we?
-          </p>
-          <h2 className="reveal mt-2 font-[family-name:var(--font-anton)] text-[clamp(2rem,5vw,3.5rem)] uppercase leading-none text-black">
+    <section id="who" className="bg-[#fdfbf7] py-28 md:py-40">
+      <div className="mx-auto grid max-w-7xl gap-16 px-6 md:grid-cols-2 md:items-center">
+        <MotionReveal>
+          <h2 className="font-[family-name:var(--font-anton)] text-[clamp(2.25rem,5vw,4rem)] uppercase leading-[0.95] text-[#141210]">
             Kenzrs are
             <br />
-            real Dubai locals.
+            real Dubai locals
           </h2>
-        </div>
+        </MotionReveal>
 
-        <div className="space-y-5 text-lg leading-relaxed text-black/85">
-          <p className="reveal">
-            Not guides. Not an agency. Not a call centre reading off a script.
-            We&apos;re people who actually{" "}
-            <strong className="bg-[var(--tape-yellow)] px-1">live here</strong>{" "}
-            and are violently tired of watching visitors get funnelled into
-            overpriced, generic tourist traps.
-          </p>
-          <p className="reveal">
-            This scrapbook is everything we&apos;d tell a friend flying in.
-            It&apos;s free, read it, screenshot it, use it. And if you want one
-            of us actually{" "}
-            <strong className="bg-[var(--tape-yellow)] px-1">
-              in your chat the whole trip
-            </strong>
-            , telling you where to eat right now and which taxi line&apos;s a
-            scam, that&apos;s where Kenz gets good.
-          </p>
-        </div>
+        <MotionReveal delay={0.1}>
+          <div className="space-y-6 text-lg leading-relaxed text-[#141210]/75">
+            <p>
+              Not guides. Not an agency. Not a call centre reading a script. We
+              live here and we are tired of watching visitors get funnelled into
+              overpriced tourist traps.
+            </p>
+            <p>
+              KenZ is what we would tell a friend flying in: the apps, the cheap
+              eats, the neighborhoods worth your time. Free to use. A Kenzr in
+              your chat when you want a human who is actually on the ground.
+            </p>
+          </div>
+        </MotionReveal>
       </div>
+
+      <MotionReveal delay={0.15} className="mx-auto mt-20 max-w-7xl px-6">
+        <div className="grid gap-4 md:grid-cols-3">
+          {[
+            { value: "200+", label: "nationalities in one city" },
+            { value: "AED 1", label: "abra ride across the creek" },
+            { value: "24/7", label: "chat when plans change" },
+          ].map((item) => (
+            <BezelCard key={item.label} innerClassName="p-8">
+              <p className="font-[family-name:var(--font-anton)] text-4xl text-orange">
+                {item.value}
+              </p>
+              <p className="mt-2 text-sm text-[#141210]/60">{item.label}</p>
+            </BezelCard>
+          ))}
+        </div>
+      </MotionReveal>
     </section>
   );
 }

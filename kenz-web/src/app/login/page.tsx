@@ -5,7 +5,7 @@ import Nav from "@/components/Nav";
 
 function LoginFallback() {
   return (
-    <div className="mx-auto w-full max-w-md rounded-2xl border-[3px] border-black bg-white p-8 text-center shadow-[8px_8px_0_#141210]">
+    <div className="mx-auto w-full max-w-md rounded-2xl border border-black/10 bg-white p-8 text-center shadow-[0_24px_64px_rgba(20,18,16,0.08)]">
       Loading…
     </div>
   );
@@ -15,13 +15,13 @@ export default function LoginPage() {
   return (
     <>
       <Nav />
-      <main className="min-h-[calc(100vh-4rem)] bg-orange px-6 py-16">
+      <main className="min-h-[calc(100dvh-4rem)] bg-surface px-6 py-16">
         <div className="mx-auto max-w-3xl text-center">
           <Link
             href="/"
-            className="mb-8 inline-flex font-[family-name:var(--font-caveat)] text-lg text-black/70 hover:text-black"
+            className="mb-8 inline-flex text-sm font-medium text-black/60 transition-colors hover:text-black"
           >
-            ← Back to KenZ
+            Back to KenZ
           </Link>
 
           <Suspense fallback={<LoginFallback />}>

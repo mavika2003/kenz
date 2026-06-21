@@ -69,12 +69,12 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-md rounded-2xl border-[3px] border-black bg-white p-6 shadow-[8px_8px_0_#141210] sm:p-8">
-      <p className="font-[family-name:var(--font-caveat)] text-xl text-orange-deep">
-        {mode === "signup" ? "join the crew" : "welcome back"}
+    <div className="mx-auto w-full max-w-md rounded-2xl border border-black/10 bg-white p-6 shadow-[0_24px_64px_rgba(20,18,16,0.08)] sm:p-8">
+      <p className="text-xs font-semibold uppercase tracking-wider text-orange">
+        {mode === "signup" ? "Create account" : "Welcome back"}
       </p>
-      <h1 className="mt-2 font-[family-name:var(--font-playfair)] text-3xl font-semibold text-black">
-        {mode === "signup" ? "Create your KenZ account" : "Log in to KenZ"}
+      <h1 className="mt-3 font-[family-name:var(--font-anton)] text-2xl uppercase leading-tight text-black">
+        {mode === "signup" ? "Join KenZ" : "Log in to KenZ"}
       </h1>
       <p className="mt-2 text-sm text-black/65">
         {mode === "signup"
@@ -82,7 +82,7 @@ export default function LoginForm() {
           : "Pick up where you left off with your Dubai local."}
       </p>
 
-      <div className="mt-6 flex rounded-full border-2 border-black bg-paper p-1">
+      <div className="mt-6 flex rounded-full border border-black/10 bg-surface p-1">
         <button
           type="button"
           onClick={() => switchMode("signup")}

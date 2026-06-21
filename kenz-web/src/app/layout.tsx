@@ -1,16 +1,12 @@
 import type { Metadata } from "next";
-import {
-  Anton,
-  Caveat,
-  Inter,
-  Playfair_Display,
-} from "next/font/google";
+import { Anton, Plus_Jakarta_Sans } from "next/font/google";
 import Providers from "@/components/Providers";
 import "./globals.css";
 
-const inter = Inter({
-  variable: "--font-inter",
+const jakarta = Plus_Jakarta_Sans({
+  variable: "--font-jakarta",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
 });
 
 const anton = Anton({
@@ -19,22 +15,10 @@ const anton = Anton({
   subsets: ["latin"],
 });
 
-const playfair = Playfair_Display({
-  variable: "--font-playfair",
-  subsets: ["latin"],
-  style: ["normal", "italic"],
-});
-
-const caveat = Caveat({
-  variable: "--font-caveat",
-  subsets: ["latin"],
-  weight: ["500", "700"],
-});
-
 export const metadata: Metadata = {
   title: "Kenz — Explore Dubai Like a Local",
   description:
-    "A free insider scrapbook written by real Dubai residents — the apps, cheap eats, hacks, and spots locals actually use.",
+    "Insider Dubai travel by real residents. Neighborhoods, local eats, trip planning, and live chat with Kenzrs who live here.",
 };
 
 export default function RootLayout({
@@ -45,7 +29,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${anton.variable} ${playfair.variable} ${caveat.variable} h-full antialiased`}
+      className={`${jakarta.variable} ${anton.variable} h-full antialiased`}
     >
       <body className="min-h-full">
         <Providers>{children}</Providers>

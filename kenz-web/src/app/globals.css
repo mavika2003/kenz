@@ -4,24 +4,23 @@
   --orange: #ff6a00;
   --orange-deep: #d94e00;
   --orange-soft: #ff8b3d;
-  --black: #141210;
+  --ink: #141210;
+  --canvas: #fdfbf7;
+  --surface: #f7f4ef;
+  --paper: #f7f4ef;
   --white: #ffffff;
-  --paper: #fbf3e4;
-  --paper-line: rgba(20, 18, 16, 0.06);
-  --tape-orange: rgba(255, 106, 0, 0.55);
-  --tape-cream: rgba(255, 210, 63, 0.6);
 }
 
 @theme inline {
   --color-orange: var(--orange);
   --color-orange-deep: var(--orange-deep);
   --color-orange-soft: var(--orange-soft);
-  --color-black: var(--black);
+  --color-ink: var(--ink);
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
   --color-paper: var(--paper);
-  --font-sans: var(--font-inter);
+  --font-sans: var(--font-jakarta);
   --font-display: var(--font-anton);
-  --font-serif: var(--font-playfair);
-  --font-hand: var(--font-caveat);
 }
 
 html {
@@ -30,696 +29,92 @@ html {
 
 body {
   background: var(--white);
-  color: var(--black);
-  font-family: var(--font-inter), system-ui, sans-serif;
+  color: var(--ink);
+  font-family: var(--font-jakarta), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
-.paper-bg {
-  background-color: var(--paper);
-  background-image: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 31px,
-    var(--paper-line) 31px,
-    var(--paper-line) 32px
-  );
+.film-grain {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  opacity: 0.028;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-.blob-mask {
-  border-radius: 58% 42% 52% 48% / 48% 52% 48% 52%;
-}
-
-.tape {
-  position: absolute;
-  top: -10px;
-  left: 50%;
-  width: 72px;
-  height: 20px;
-  border-radius: 2px;
-  transform: translateX(-50%) rotate(-3deg);
-  box-shadow: 0 2px 6px rgba(20, 18, 16, 0.08);
-  z-index: 2;
-}
-
-.tape-orange {
-  background: var(--tape-orange);
-}
-
-.tape-cream {
-  background: var(--tape-cream);
-}
-
-/* ── Interactive Dubai map (Leaflet) ── */
+/* ── Dubai map ── */
 .dubai-map .leaflet-container {
-  background: var(--paper);
-  font-family: var(--font-inter), system-ui, sans-serif;
+  background: var(--surface);
+  font-family: var(--font-jakarta), system-ui, sans-serif;
+  border-radius: calc(2rem - 0.5rem);
+  min-height: 320px;
 }
 
 .dubai-map .leaflet-control-zoom a {
-  border: 2px solid var(--black) !important;
-  color: var(--black) !important;
+  border: 1px solid rgba(20, 18, 16, 0.12) !important;
+  color: var(--ink) !important;
   background: var(--white) !important;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 28px !important;
+  border-radius: 8px !important;
 }
 
 .dubai-map .leaflet-control-zoom a:hover {
   background: var(--orange) !important;
+  color: #fff !important;
 }
 
 .dubai-map-marker {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
-  border: 2px solid var(--black);
+  border: 1px solid rgba(20, 18, 16, 0.2);
   background: var(--white);
-  font-size: 18px;
-  box-shadow: 3px 3px 0 rgba(20, 18, 16, 0.15);
+  font-size: 11px;
+  font-weight: 700;
+  box-shadow: 0 8px 24px rgba(20, 18, 16, 0.1);
   cursor: pointer;
-  transition: transform 0.15s ease, background 0.15s ease;
+  transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1), background 0.35s;
 }
 
 .dubai-map-marker:hover,
 .dubai-map-marker.is-active {
-  transform: scale(1.12);
+  transform: scale(1.08);
   background: var(--orange);
+  color: #fff;
+  border-color: var(--orange);
 }
 
 .dubai-map-popup-wrap .leaflet-popup-content-wrapper {
-  border: 2px solid var(--black);
-  border-radius: 12px;
-  box-shadow: 4px 4px 0 rgba(20, 18, 16, 0.12);
+  border: 1px solid rgba(20, 18, 16, 0.1);
+  border-radius: 16px;
+  box-shadow: 0 16px 48px rgba(20, 18, 16, 0.12);
   padding: 0;
 }
 
 .dubai-map-popup-wrap .leaflet-popup-content {
-  margin: 12px 14px;
+  margin: 14px 16px;
   font-size: 13px;
   line-height: 1.5;
-  color: var(--black);
 }
 
 .dubai-map-popup-wrap .leaflet-popup-content strong {
   display: block;
   font-family: var(--font-anton), sans-serif;
-  font-size: 12px;
+  font-size: 11px;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   margin-bottom: 4px;
-}
-
-.dubai-map-popup-wrap .leaflet-popup-content p {
-  margin: 0;
-  color: rgba(20, 18, 16, 0.75);
-}
-
-.dubai-map-popup-wrap .leaflet-popup-tip {
-  border-top-color: var(--black);
 }
 
 .dubai-map .leaflet-control-attribution {
   font-size: 9px;
-  color: rgba(20, 18, 16, 0.45);
+  color: rgba(20, 18, 16, 0.4);
   background: transparent !important;
-}
-
-/* ── Invest block — full-width map + book page chat ── */
-.invest-map-panel {
-  background-color: var(--white);
-}
-
-.book-page-panel {
-  background-color: var(--paper);
-  background-image:
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E"),
-    repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 27px,
-      rgba(20, 18, 16, 0.035) 27px,
-      rgba(20, 18, 16, 0.035) 28px
-    );
-}
-
-.book-page-grain {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-    ellipse at 30% 20%,
-    rgba(255, 106, 0, 0.04) 0%,
-    transparent 50%
-  );
-  pointer-events: none;
-}
-
-.book-page-polaroid {
-  position: absolute;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--white);
-  border: 2px solid var(--black);
-  box-shadow: 3px 4px 0 rgba(20, 18, 16, 0.1);
-  font-size: 20px;
-  pointer-events: none;
-  z-index: 1;
-  opacity: 0.9;
-}
-
-.book-page-polaroid--1 {
-  top: 10%;
-  right: 10%;
-  width: 64px;
-  height: 76px;
-  padding-bottom: 14px;
-  transform: rotate(8deg);
-}
-
-.book-page-polaroid--2 {
-  bottom: 16%;
-  right: 16%;
-  width: 58px;
-  height: 68px;
-  padding-bottom: 12px;
-  transform: rotate(-6deg);
-}
-
-.book-page-polaroid--3 {
-  top: 44%;
-  right: 6%;
-  width: 52px;
-  height: 62px;
-  padding-bottom: 10px;
-  transform: rotate(12deg);
-  opacity: 0.75;
-}
-
-@media (max-width: 768px) {
-  .book-page-polaroid {
-    display: none;
-  }
-}
-
-/* legacy chat panel styles kept for reference — replaced by book-page-panel */
-.scrapbook-chat-panel {
-  background: linear-gradient(
-    145deg,
-    #b83d0a 0%,
-    #d94e00 28%,
-    #ff6a00 55%,
-    #c44a12 82%,
-    #a03508 100%
-  );
-}
-
-.scrapbook-chat-grain {
-  position: absolute;
-  inset: 0;
-  opacity: 0.18;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
-  mix-blend-mode: overlay;
-  pointer-events: none;
-}
-
-.scrapbook-chat-flecks {
-  position: absolute;
-  inset: 0;
-  background-image:
-    radial-gradient(circle at 12% 18%, rgba(255, 220, 100, 0.55) 1.5px, transparent 1.5px),
-    radial-gradient(circle at 78% 12%, rgba(255, 210, 63, 0.45) 2px, transparent 2px),
-    radial-gradient(circle at 35% 72%, rgba(255, 230, 120, 0.4) 1px, transparent 1px),
-    radial-gradient(circle at 88% 58%, rgba(255, 200, 80, 0.5) 1.5px, transparent 1.5px),
-    radial-gradient(circle at 55% 38%, rgba(255, 215, 90, 0.35) 1px, transparent 1px),
-    radial-gradient(circle at 22% 88%, rgba(255, 210, 63, 0.45) 2px, transparent 2px),
-    radial-gradient(circle at 65% 85%, rgba(255, 225, 110, 0.4) 1.5px, transparent 1.5px);
-  pointer-events: none;
-}
-
-.scrapbook-spiral {
-  position: absolute;
-  left: 10px;
-  top: 8%;
-  bottom: 8%;
-  width: 18px;
-  background: repeating-linear-gradient(
-    to bottom,
-    transparent 0px,
-    transparent 14px,
-    var(--black) 14px,
-    var(--black) 22px,
-    transparent 22px,
-    transparent 36px
-  );
-  border-radius: 9px;
-  opacity: 0.25;
-  pointer-events: none;
-}
-
-.scrapbook-polaroid {
-  position: absolute;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--white);
-  border: 2px solid var(--black);
-  box-shadow: 4px 5px 0 rgba(20, 18, 16, 0.18);
-  font-size: 22px;
-  pointer-events: none;
-  z-index: 1;
-}
-
-.scrapbook-polaroid--1 {
-  top: 10%;
-  right: 8%;
-  width: 72px;
-  height: 84px;
-  padding-bottom: 18px;
-  transform: rotate(8deg);
-}
-
-.scrapbook-polaroid--2 {
-  bottom: 14%;
-  right: 14%;
-  width: 64px;
-  height: 76px;
-  padding-bottom: 14px;
-  transform: rotate(-6deg);
-}
-
-.scrapbook-polaroid--3 {
-  top: 42%;
-  right: 4%;
-  width: 56px;
-  height: 66px;
-  padding-bottom: 12px;
-  transform: rotate(14deg);
-  opacity: 0.85;
-}
-
-.scrapbook-tape-accent {
-  position: absolute;
-  width: 64px;
-  height: 18px;
-  border-radius: 2px;
-  z-index: 2;
-  pointer-events: none;
-}
-
-.scrapbook-tape-accent--1 {
-  top: 22%;
-  left: 18%;
-  background: var(--tape-cream);
-  transform: rotate(-18deg);
-  opacity: 0.7;
-}
-
-.scrapbook-tape-accent--2 {
-  bottom: 28%;
-  left: 28%;
-  background: var(--tape-orange);
-  transform: rotate(12deg);
-  opacity: 0.65;
-}
-
-.scrapbook-note-card {
-  background: var(--paper);
-  border: 2px solid var(--black);
-  border-radius: 3px;
-  padding: clamp(1.5rem, 4vw, 2.25rem);
-  box-shadow: 10px 12px 0 rgba(20, 18, 16, 0.22);
-  transform: rotate(-1.5deg);
-}
-
-.scrapbook-note-card::before {
-  content: "";
-  position: absolute;
-  top: -6px;
-  left: 8%;
-  right: 8%;
-  height: 12px;
-  background: var(--paper);
-  clip-path: polygon(
-    0% 100%,
-    3% 40%,
-    7% 80%,
-    12% 30%,
-    18% 70%,
-    24% 20%,
-    30% 75%,
-    36% 35%,
-    42% 85%,
-    48% 25%,
-    54% 70%,
-    60% 40%,
-    66% 80%,
-    72% 30%,
-    78% 75%,
-    84% 45%,
-    90% 85%,
-    96% 50%,
-    100% 100%
-  );
-}
-
-.scrapbook-note-card::after {
-  content: "";
-  position: absolute;
-  top: -14px;
-  left: 50%;
-  width: 80px;
-  height: 22px;
-  transform: translateX(-50%) rotate(-2deg);
-  background: var(--tape-cream);
-  border-radius: 2px;
-  box-shadow: 0 2px 4px rgba(20, 18, 16, 0.1);
-}
-
-@media (max-width: 768px) {
-  .scrapbook-polaroid,
-  .scrapbook-tape-accent {
-    display: none;
-  }
-
-  .scrapbook-note-card {
-    transform: none;
-  }
-}
-
-/* ── Scrapbook chapters collage ── */
-.scrapbook-chapters-section {
-  position: relative;
-  background-color: #faf6f0;
-  background-image:
-    radial-gradient(ellipse at 15% 10%, rgba(255, 106, 0, 0.09) 0%, transparent 55%),
-    radial-gradient(ellipse at 88% 85%, rgba(217, 78, 0, 0.07) 0%, transparent 50%),
-    radial-gradient(ellipse at 50% 50%, rgba(255, 255, 255, 0.9) 0%, transparent 70%),
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.055'/%3E%3C/svg%3E");
-}
-
-.scrapbook-chapters-grain {
-  position: absolute;
-  inset: 0;
-  opacity: 1;
-  background-image:
-    radial-gradient(circle at 20% 30%, rgba(255, 200, 80, 0.12) 1px, transparent 1px),
-    radial-gradient(circle at 70% 60%, rgba(255, 180, 60, 0.1) 1.5px, transparent 1.5px),
-    radial-gradient(circle at 40% 80%, rgba(255, 210, 100, 0.08) 1px, transparent 1px);
-  background-size: 120px 120px, 180px 180px, 140px 140px;
-  pointer-events: none;
-}
-
-.scrapbook-chapters-title {
-  text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.9);
-}
-
-.scrapbook-collage-board {
-  position: relative;
-  margin-top: 3rem;
-  min-height: 720px;
-  display: none;
-}
-
-.scrapbook-collage-deco {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.scrapbook-collage-polaroids {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  min-height: 720px;
-  z-index: 2;
-}
-
-.scrapbook-polaroid-card {
-  position: absolute;
-  display: flex;
-  flex-direction: column;
-  background: var(--white);
-  border: 2px solid var(--black);
-  padding: 10px 10px 16px;
-  box-shadow: 5px 7px 0 rgba(20, 18, 16, 0.15);
-  cursor: pointer;
-  text-align: left;
-  transform: rotate(var(--rotate, 0deg));
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  z-index: 2;
-}
-
-.scrapbook-polaroid-card:hover {
-  transform: rotate(var(--rotate, 0deg)) translateY(-6px) scale(1.03);
-  box-shadow: 8px 11px 0 rgba(20, 18, 16, 0.2);
-  z-index: 10;
-}
-
-.scrapbook-polaroid-card--sm {
-  width: 168px;
-}
-
-.scrapbook-polaroid-card--md {
-  width: 200px;
-}
-
-.scrapbook-polaroid-card--lg {
-  width: 228px;
-}
-
-.scrapbook-polaroid-tape {
-  position: absolute;
-  top: -11px;
-  left: 50%;
-  width: 58px;
-  height: 18px;
-  transform: translateX(-50%) rotate(-2deg);
-  border-radius: 2px;
-  z-index: 3;
-  box-shadow: 0 1px 4px rgba(20, 18, 16, 0.1);
-}
-
-.scrapbook-polaroid-photo {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  aspect-ratio: 1 / 0.85;
-  border: 1px solid rgba(20, 18, 16, 0.08);
-  overflow: hidden;
-}
-
-.scrapbook-polaroid-card--sm .scrapbook-polaroid-photo {
-  aspect-ratio: 1 / 0.8;
-}
-
-.scrapbook-polaroid-emoji {
-  font-size: 2.75rem;
-  transition: transform 0.2s ease;
-}
-
-.scrapbook-polaroid-card--sm .scrapbook-polaroid-emoji {
-  font-size: 2rem;
-}
-
-.scrapbook-polaroid-card--lg .scrapbook-polaroid-emoji {
-  font-size: 3.25rem;
-}
-
-.scrapbook-polaroid-card:hover .scrapbook-polaroid-emoji {
-  transform: scale(1.1);
-}
-
-.scrapbook-polaroid-stat {
-  position: absolute;
-  bottom: 6px;
-  right: 8px;
-  font-family: var(--font-caveat), cursive;
-  font-size: 13px;
-  color: rgba(20, 18, 16, 0.55);
-  background: rgba(255, 255, 255, 0.7);
-  padding: 1px 6px;
-  border-radius: 4px;
-}
-
-.scrapbook-polaroid-caption {
-  padding: 10px 4px 0;
-}
-
-.scrapbook-polaroid-caption h3 {
-  font-family: var(--font-anton), sans-serif;
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  line-height: 1.2;
-  color: var(--black);
-}
-
-.scrapbook-polaroid-card--lg .scrapbook-polaroid-caption h3 {
-  font-size: 11px;
-}
-
-.scrapbook-polaroid-caption p {
-  margin-top: 6px;
-  font-size: 10px;
-  line-height: 1.45;
-  color: rgba(20, 18, 16, 0.7);
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.scrapbook-polaroid-card--lg .scrapbook-polaroid-caption p {
-  font-size: 11px;
-  -webkit-line-clamp: 4;
-}
-
-.scrapbook-polaroid-note {
-  display: block;
-  margin-top: 6px;
-  font-family: var(--font-caveat), cursive;
-  font-size: 14px;
-  color: var(--orange-deep);
-  line-height: 1.2;
-}
-
-.scrapbook-postcard {
-  position: absolute;
-  top: 8%;
-  right: 2%;
-  width: 148px;
-  background: var(--white);
-  border: 2px solid var(--black);
-  padding: 14px 12px 20px;
-  box-shadow: 4px 5px 0 rgba(20, 18, 16, 0.12);
-  transform: rotate(3deg);
-  z-index: 1;
-}
-
-.scrapbook-postcard-label {
-  font-family: var(--font-anton), sans-serif;
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--orange-deep);
-  border-bottom: 1px dashed rgba(20, 18, 16, 0.2);
-  padding-bottom: 6px;
-  margin-bottom: 8px;
-}
-
-.scrapbook-postcard ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.scrapbook-postcard li {
-  font-family: var(--font-caveat), cursive;
-  font-size: 14px;
-  line-height: 1.35;
-  color: var(--black);
-  padding-left: 12px;
-  position: relative;
-  margin-bottom: 4px;
-}
-
-.scrapbook-postcard li::before {
-  content: "✓";
-  position: absolute;
-  left: 0;
-  color: var(--orange);
-  font-size: 11px;
-}
-
-.scrapbook-postcard-stamp {
-  position: absolute;
-  bottom: 8px;
-  right: 10px;
-  font-family: var(--font-anton), sans-serif;
-  font-size: 9px;
-  letter-spacing: 0.1em;
-  color: var(--orange);
-  border: 2px solid var(--orange);
-  padding: 2px 6px;
-  transform: rotate(-12deg);
-  opacity: 0.8;
-}
-
-.scrapbook-map-sketch {
-  position: absolute;
-  bottom: 6%;
-  left: 4%;
-  width: 110px;
-  background: rgba(255, 255, 255, 0.6);
-  border: 1.5px dashed rgba(20, 18, 16, 0.25);
-  border-radius: 8px;
-  padding: 10px;
-  transform: rotate(-4deg);
-  z-index: 1;
-}
-
-.scrapbook-chapters-mobile {
-  display: grid;
-  gap: 1.5rem;
-  margin-top: 2.5rem;
-}
-
-.scrapbook-chapters-mobile .scrapbook-polaroid-card {
-  position: relative;
-  top: auto !important;
-  left: auto !important;
-  width: 100%;
-  max-width: 320px;
-  margin: 0 auto;
-}
-
-.scrapbook-chapters-mobile .scrapbook-polaroid-caption p {
-  -webkit-line-clamp: unset;
-  display: block;
-}
-
-@media (min-width: 900px) {
-  .scrapbook-collage-board {
-    display: block;
-  }
-
-  .scrapbook-chapters-mobile {
-    display: none;
-  }
-}
-
-.reveal {
-  opacity: 0;
-  transform: translateY(24px);
-  transition: opacity 0.55s ease, transform 0.55s ease;
-}
-
-.reveal.in {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-@keyframes pageFlash {
-  0% {
-    opacity: 0;
-    transform: scaleX(0);
-  }
-  40% {
-    opacity: 1;
-    transform: scaleX(1);
-  }
-  100% {
-    opacity: 0;
-    transform: scaleX(0);
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -729,8 +124,8 @@ body {
     animation: none !important;
     transition: none !important;
   }
-  .reveal {
-    opacity: 1;
-    transform: none;
+
+  .film-grain {
+    display: none;
   }
 }

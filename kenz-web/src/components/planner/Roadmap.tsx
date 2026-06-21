@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Milestone } from "@/lib/planner/types";
+import { easePremium } from "./ui/theme";
 
 interface RoadmapProps {
   milestones: Milestone[];
@@ -18,183 +19,76 @@ export default function Roadmap({
 }: RoadmapProps) {
   const activeIndex = milestones.findIndex((m) => m.id === activeMilestone.id);
   const progressPercent = Math.round(((activeIndex + 1) / milestones.length) * 100);
-  const stepsReached = activeIndex + 1;
 
   const isStepComplete = (milestoneId: string, index: number) =>
     completedMilestones.includes(milestoneId) || index < activeIndex;
 
   return (
-    <div className="h-full flex flex-col">
-      {/* Header */}
-      <div className="p-6 border-b-2 border-[#141210] bg-[#ff6a00]">
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-3"
-        >
-          <div className="w-10 h-10 rounded-lg bg-[#141210] flex items-center justify-center text-lg font-bold text-white">
-            K
-          </div>
-          <div>
-            <h1 className="text-sm font-bold text-[#141210] uppercase tracking-wide">Kenz</h1>
-            <p className="text-xs text-[#141210]/70 font-medium">Pre-Planning Hub</p>
-          </div>
-        </motion.div>
+    <div className="flex h-full flex-col">
+      <div className="border-b border-black/[0.06] p-5">
+        <h1 className="font-[family-name:var(--font-anton)] text-lg uppercase text-ink">
+          Plan your trip
+        </h1>
+        <p className="mt-1 text-sm text-ink/55">Build your Dubai itinerary step by step.</p>
       </div>
 
-      {/* Roadmap Timeline */}
-      <div className="flex-1 overflow-y-auto py-6 px-4">
-        <div className="relative">
-          {/* Vertical connecting line */}
-          <div className="absolute left-[19px] top-3 bottom-3 w-[2px] bg-[#141210]/10" />
+      <div className="flex-1 overflow-x-auto overflow-y-auto p-4 lg:overflow-x-hidden">
+        <div className="flex gap-2 lg:flex-col lg:gap-1">
+          {milestones.map((milestone, index) => {
+            const isActive = milestone.id === activeMilestone.id;
+            const isCompleted = isStepComplete(milestone.id, index);
 
-          {/* Animated progress line */}
-          <motion.div
-            className="absolute left-[19px] top-3 w-[2px] bg-[#ff6a00]"
-            initial={{ height: 0 }}
-            animate={{
-              height: `${(activeIndex / (milestones.length - 1)) * 100}%`,
-            }}
-            transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
-          />
-
-          {/* Milestone nodes */}
-          <div className="space-y-1">
-            {milestones.map((milestone, index) => {
-              const isActive = milestone.id === activeMilestone.id;
-              const isCompleted = isStepComplete(milestone.id, index);
-
-              return (
-                <motion.button
-                  key={milestone.id}
-                  onClick={() => onSelect(milestone)}
-                  className={`relative w-full text-left p-3 rounded-xl transition-all duration-300 group ${
+            return (
+              <motion.button
+                key={milestone.id}
+                type="button"
+                onClick={() => onSelect(milestone)}
+                whileHover={{ x: 2 }}
+                whileTap={{ scale: 0.98 }}
+                className={`flex min-w-[200px] items-center gap-3 rounded-xl p-3 text-left transition-colors lg:min-w-0 lg:w-full ${
+                  isActive ? "bg-orange/10" : "hover:bg-black/[0.03]"
+                }`}
+              >
+                <span
+                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-all ${
                     isActive
-                      ? "bg-[#ff6a00]/10"
-                      : "hover:bg-[#141210]/[0.03]"
+                      ? "bg-orange text-white"
+                      : isCompleted
+                        ? "bg-orange/15 text-orange"
+                        : "bg-surface text-ink/40"
                   }`}
-                  whileHover={{ x: 4 }}
-                  whileTap={{ scale: 0.98 }}
                 >
-                  <div className="flex items-center gap-4">
-                    {/* Node indicator */}
-                    <div className="relative flex-shrink-0">
-                      {/* Glow effect for active node */}
-                      {isActive && (
-                        <motion.div
-                          layoutId="activeGlow"
-                          className="absolute inset-0 rounded-full"
-                          style={{
-                            background: "radial-gradient(circle, rgba(255,106,0,0.3) 0%, transparent 70%)",
-                            filter: "blur(8px)",
-                            transform: "scale(2)",
-                          }}
-                          transition={{ duration: 0.3 }}
-                        />
-                      )}
-
-                      <motion.div
-                        className={`relative w-10 h-10 rounded-full flex items-center justify-center text-base transition-all duration-300 border-2 ${
-                          isActive
-                            ? "bg-[#ff6a00] text-white border-[#141210] shadow-[3px_3px_0_#141210]"
-                            : isCompleted
-                            ? "bg-[#ff6a00]/20 text-[#ff6a00] border-[#ff6a00]"
-                            : "bg-white text-[#141210]/40 border-[#141210]/20"
-                        }`}
-                        animate={
-                          isActive
-                            ? {
-                                boxShadow: [
-                                  "3px 3px 0 #141210",
-                                  "5px 5px 0 #141210",
-                                  "3px 3px 0 #141210",
-                                ],
-                              }
-                            : {}
-                        }
-                        transition={
-                          isActive
-                            ? {
-                                duration: 2,
-                                repeat: Infinity,
-                                ease: "easeInOut",
-                              }
-                            : {}
-                        }
-                      >
-                        {isCompleted && !isActive ? "✓" : milestone.icon}
-                      </motion.div>
-
-                      {/* Completed ring */}
-                      {isCompleted && (
-                        <motion.div
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          className="absolute inset-0 rounded-full border-2 border-[#ff6a00]"
-                        />
-                      )}
-                    </div>
-
-                    {/* Label */}
-                    <div className="flex-1 min-w-0">
-                      <motion.p
-                        className={`font-bold text-sm transition-colors duration-300 ${
-                          isActive
-                            ? "text-[#141210]"
-                            : isCompleted
-                            ? "text-[#141210]/80"
-                            : "text-[#141210]/50"
-                        }`}
-                      >
-                        {milestone.label}
-                      </motion.p>
-                      <p
-                        className={`text-xs mt-0.5 transition-colors duration-300 ${
-                          isActive
-                            ? "text-[#ff6a00]"
-                            : "text-[#141210]/40"
-                        }`}
-                      >
-                        {milestone.description}
-                      </p>
-                    </div>
-
-                    {/* Status indicator */}
-                    {(isActive || isCompleted) && (
-                      <motion.div
-                        initial={{ scale: 0, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        className={`w-2 h-2 rounded-full ${
-                          isActive
-                            ? "bg-[#ff6a00] shadow-[0_0_8px_rgba(255,106,0,0.8)]"
-                            : "bg-[#10b981]"
-                        }`}
-                      />
-                    )}
-                  </div>
-                </motion.button>
-              );
-            })}
-          </div>
+                  {isCompleted && !isActive ? "✓" : milestone.icon}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span
+                    className={`block text-sm font-semibold ${
+                      isActive ? "text-ink" : isCompleted ? "text-ink/75" : "text-ink/45"
+                    }`}
+                  >
+                    {milestone.label}
+                  </span>
+                  <span className="block text-xs text-ink/45">{milestone.description}</span>
+                </span>
+              </motion.button>
+            );
+          })}
         </div>
       </div>
 
-      {/* Footer info */}
-      <div className="p-4 border-t-2 border-[#141210] bg-[#fbf3e4]">
-        <div className="flex items-center justify-between text-xs text-[#141210]/50 font-medium">
+      <div className="border-t border-black/[0.06] p-4">
+        <div className="flex items-center justify-between text-xs font-medium text-ink/45">
           <span>
-            {stepsReached} of {milestones.length} steps
+            {activeIndex + 1} of {milestones.length}
           </span>
-          <span className="text-[#ff6a00]">{progressPercent}%</span>
+          <span className="text-orange">{progressPercent}%</span>
         </div>
-        <div className="mt-2 h-2 bg-[#141210]/10 rounded-full overflow-hidden border border-[#141210]/10">
+        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-black/[0.06]">
           <motion.div
-            className="h-full bg-[#ff6a00] rounded-full"
+            className="h-full rounded-full bg-orange"
             initial={{ width: 0 }}
-            animate={{
-              width: `${progressPercent}%`,
-            }}
-            transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
+            animate={{ width: `${progressPercent}%` }}
+            transition={{ duration: 0.5, ease: easePremium }}
           />
         </div>
       </div>

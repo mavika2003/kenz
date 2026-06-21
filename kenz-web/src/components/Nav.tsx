@@ -1,19 +1,44 @@
 "use client";
 
 import Link from "next/link";
+import { AnimatePresence, motion } from "framer-motion";
+import { useEffect, useState } from "react";
 import { useAuth } from "./AuthProvider";
-import PillButton from "./PillButton";
 import { ProtectedPlannerLink } from "./ProtectedPlannerLink";
 import { loginPageUrl } from "@/lib/auth";
+import { easePremium } from "@/lib/motion";
 
 const links = [
   { href: "/#who", label: "Who we are" },
-  { href: "/#book", label: "Scrapbook" },
-  { href: "/#chapters", label: "Chapters" },
+  { href: "/#experiences", label: "Experiences" },
+  { href: "/#map", label: "Neighborhoods" },
 ];
 
-export default function Nav() {
+type NavProps = {
+  overlay?: boolean;
+};
+
+export default function Nav({ overlay = false }: NavProps) {
   const { user, signOut } = useAuth();
+  const [scrolled, setScrolled] = useState(false);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (!overlay) return;
+    const onScroll = () => setScrolled(window.scrollY > 32);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [overlay]);
+
+  useEffect(() => {
+    document.body.style.overflow = open ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [open]);
+
+  const isDarkShell = overlay && !scrolled;
 
   const handleSignOut = () => {
     signOut();
@@ -21,70 +46,151 @@ export default function Nav() {
   };
 
   return (
-    <nav className="sticky top-0 z-50 border-b-2 border-black bg-white/95 backdrop-blur-sm">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
-        <Link
-          href="/"
-          className="shrink-0 font-[family-name:var(--font-anton)] text-2xl tracking-wide text-black"
+    <>
+      <header
+        className={`${overlay ? "fixed" : "sticky"} top-0 z-40 flex w-full justify-center px-4 ${overlay ? "pt-5" : "pt-3"}`}
+      >
+        <nav
+          className={`flex w-full max-w-5xl items-center justify-between gap-3 rounded-full px-3 py-2 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] sm:px-4 ${
+            isDarkShell
+              ? "bg-[#141210]/55 text-white ring-1 ring-white/15 backdrop-blur-2xl"
+              : "bg-white/90 text-[#141210] ring-1 ring-black/[0.06] backdrop-blur-xl shadow-[0_8px_40px_rgba(20,18,16,0.06)]"
+          }`}
         >
-          KEN<span className="text-white [-webkit-text-stroke:1.5px_#141210]">Z</span>
-        </Link>
-
-        <div className="hidden items-center gap-8 md:flex">
-          {links.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="text-sm font-medium text-black/80 transition-colors hover:text-orange"
+          <Link
+            href="/"
+            className="shrink-0 px-2 font-[family-name:var(--font-anton)] text-xl tracking-wide sm:text-2xl"
+          >
+            KEN
+            <span
+              className={
+                isDarkShell
+                  ? "text-black [-webkit-text-stroke:1.5px_#ffffff]"
+                  : "text-white [-webkit-text-stroke:1.5px_#141210]"
+              }
             >
-              {link.label}
-            </Link>
-          ))}
-          <ProtectedPlannerLink className="text-sm font-medium text-black/80 transition-colors hover:text-orange">
-            Plan Trip
-          </ProtectedPlannerLink>
-        </div>
+              Z
+            </span>
+          </Link>
 
-        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-          {user ? (
-            <>
-              <span className="hidden max-w-[8rem] truncate text-sm font-medium text-black/80 sm:inline">
-                {user.name}
-              </span>
-              <Link href="/planner" className={pillLinkClass("secondary")}>
-                Plan Trip
-              </Link>
-              <Link href="/chat" className={pillLinkClass("primary")}>
-                Open chat
-              </Link>
-              <PillButton
-                variant="secondary"
-                onClick={handleSignOut}
-                className="px-3 py-2 text-xs sm:px-4 sm:text-sm"
+          <div className="hidden items-center gap-6 md:flex">
+            {links.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`text-sm font-medium transition-colors duration-300 ${
+                  isDarkShell ? "text-white/80 hover:text-white" : "text-black/65 hover:text-orange"
+                }`}
               >
-                Log out
-              </PillButton>
-            </>
-          ) : (
-            <>
-              <Link href={loginPageUrl("signup")} className={pillLinkClass("secondary")}>
-                Sign Up
+                {link.label}
               </Link>
-              <Link href={loginPageUrl("login")} className={pillLinkClass("primary")}>
-                Login
-              </Link>
-            </>
-          )}
-        </div>
-      </div>
-    </nav>
+            ))}
+            <ProtectedPlannerLink
+              className={`text-sm font-medium transition-colors duration-300 ${
+                isDarkShell ? "text-white/80 hover:text-white" : "text-black/65 hover:text-orange"
+              }`}
+            >
+              Plan trip
+            </ProtectedPlannerLink>
+          </div>
+
+          <div className="hidden items-center gap-2 md:flex">
+            {user ? (
+              <>
+                <Link href="/planner" className={authPill(isDarkShell, "ghost")}>
+                  Planner
+                </Link>
+                <Link href="/chat" className={authPill(isDarkShell, "solid")}>
+                  Chat
+                </Link>
+                <button type="button" onClick={handleSignOut} className={authPill(isDarkShell, "ghost")}>
+                  Log out
+                </button>
+              </>
+            ) : (
+              <>
+                <Link href={loginPageUrl("signup")} className={authPill(isDarkShell, "ghost")}>
+                  Sign up
+                </Link>
+                <Link href={loginPageUrl("login")} className={authPill(isDarkShell, "solid")}>
+                  Login
+                </Link>
+              </>
+            )}
+          </div>
+
+          <button
+            type="button"
+            className="relative flex h-10 w-10 items-center justify-center rounded-full md:hidden"
+            aria-label={open ? "Close menu" : "Open menu"}
+            onClick={() => setOpen((v) => !v)}
+          >
+            <span
+              className={`absolute h-0.5 w-5 rounded-full transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${
+                isDarkShell ? "bg-white" : "bg-[#141210]"
+              } ${open ? "translate-y-0 rotate-45" : "-translate-y-1.5"}`}
+            />
+            <span
+              className={`absolute h-0.5 w-5 rounded-full transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${
+                isDarkShell ? "bg-white" : "bg-[#141210]"
+              } ${open ? "opacity-0" : "opacity-100"}`}
+            />
+            <span
+              className={`absolute h-0.5 w-5 rounded-full transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${
+                isDarkShell ? "bg-white" : "bg-[#141210]"
+              } ${open ? "translate-y-0 -rotate-45" : "translate-y-1.5"}`}
+            />
+          </button>
+        </nav>
+      </header>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-[#141210]/90 backdrop-blur-3xl md:hidden"
+          >
+            <div className="flex h-full flex-col justify-center px-8">
+              {[...links, { href: "/planner", label: "Plan trip" }, { href: "/chat", label: "Chat" }].map(
+                (link, i) => (
+                  <motion.div
+                    key={link.href}
+                    initial={{ opacity: 0, y: 48 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 24 }}
+                    transition={{ delay: 0.08 + i * 0.06, duration: 0.55, ease: easePremium }}
+                  >
+                    <Link
+                      href={link.href}
+                      onClick={() => setOpen(false)}
+                      className="block border-b border-white/10 py-5 font-[family-name:var(--font-anton)] text-3xl uppercase text-white"
+                    >
+                      {link.label}
+                    </Link>
+                  </motion.div>
+                )
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }
 
-function pillLinkClass(variant: "primary" | "secondary"): string {
+function authPill(dark: boolean, style: "solid" | "ghost"): string {
   const base =
-    "inline-flex items-center rounded-full border-2 border-black px-3 py-2 text-xs font-semibold transition-colors sm:px-4 sm:text-sm";
-  return variant === "primary"
-    ? `${base} bg-black text-white hover:bg-orange hover:border-orange`
-    : `${base} bg-white text-black hover:bg-paper`;
+    "rounded-full px-4 py-2 text-xs font-semibold transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-[0.98] sm:text-sm";
+
+  if (dark) {
+    return style === "solid"
+      ? `${base} bg-white text-[#141210] hover:bg-orange hover:text-white`
+      : `${base} text-white/85 hover:bg-white/10`;
+  }
+
+  return style === "solid"
+    ? `${base} bg-[#141210] text-white hover:bg-orange`
+    : `${base} text-black/70 hover:text-orange`;
 }

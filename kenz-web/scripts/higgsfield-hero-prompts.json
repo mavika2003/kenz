@@ -1,0 +1,23 @@
+{
+  "model": "kling3_0_turbo",
+  "aspect_ratio": "16:9",
+  "duration": 15,
+  "declined_preset_id": "24bae836-2c4a-48e0-89b6-49fcc0b21612",
+  "scenes": [
+    {
+      "id": "urban",
+      "output": "public/videos/hero-urban.mp4",
+      "prompt": "Generate a cinematic 15-second background video for a travel startup website. Subject: A panoramic view of the Dubai Marina skyline at golden hour with Burj Khalifa visible in the distance. Camera: Slow, stable aerial drone tracking shot moving horizontally. Lighting: Warm golden hour glow, soft reflections on glass buildings, high-contrast shadows. Style: Hyper-realistic, 8k resolution, cinematic color grading, professional travel documentary aesthetic, very smooth motion, no rapid camera jumps. Mood: Serene, aspirational, and premium."
+    },
+    {
+      "id": "culture",
+      "output": "public/videos/hero-culture.mp4",
+      "prompt": "Generate a cinematic 15-second background video for a travel startup website. Subject: Close-up, slow-motion shot of a traditional Arabic coffee pour (gahwa) in a modern minimalist setting. Camera: Locked macro with subtle rack focus, minimal movement. Lighting: Soft diffused morning light, shallow depth of field on dallah texture and coffee stream. Style: Hyper-realistic, 8k, high-end lifestyle commercial aesthetic, very smooth motion. Mood: Serene, intimate, premium travel documentary."
+    },
+    {
+      "id": "desert",
+      "output": "public/videos/hero-desert.mp4",
+      "prompt": "Generate a cinematic 15-second background video for a travel startup website. Subject: Low-angle aerial tracking shot gliding over pristine desert dunes at sunrise. Camera: Steady floating motion, no shake, slow horizontal drift. Lighting: Long soft shadows, warm amber sand, vast negative space in sky. Style: Hyper-realistic, 8k, premium travel documentary, very smooth motion. Mood: Serene, vast, evocative of early morning peace."
+    }
+  ]
+}

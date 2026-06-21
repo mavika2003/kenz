@@ -128,7 +128,7 @@ export default function DubaiMap() {
 
   return (
     <div>
-      <div className="dubai-map relative aspect-[4/3] overflow-hidden rounded-[28px] border-2 border-black bg-paper">
+      <div className="dubai-map relative aspect-[4/3] overflow-hidden bg-surface">
         {!ready && (
           <div className="absolute inset-0 z-10 flex items-center justify-center text-sm text-black/50">
             Loading map…
@@ -143,13 +143,12 @@ export default function DubaiMap() {
             key={n.id}
             type="button"
             onClick={() => focusNeighborhood(n.id)}
-            className={`inline-flex items-center gap-1.5 rounded-full border-2 px-3 py-1.5 text-sm font-medium transition-colors ${
+            className={`inline-flex items-center rounded-full px-4 py-2 text-sm font-medium transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-[0.98] ${
               activeId === n.id
-                ? "border-black bg-orange text-black"
-                : "border-black/20 bg-white text-black hover:border-black hover:bg-paper"
+                ? "bg-orange text-white"
+                : "bg-white text-ink ring-1 ring-black/10 hover:ring-orange/40"
             }`}
           >
-            <span>{n.emoji}</span>
             {n.name}
           </button>
         ))}

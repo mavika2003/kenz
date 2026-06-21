@@ -2,15 +2,7 @@
 
 import Link from "next/link";
 import { useAuth } from "@/components/AuthProvider";
-import PillButton from "@/components/PillButton";
-
-function pillLinkClass(variant: "primary" | "secondary"): string {
-  const base =
-    "inline-flex items-center rounded-full border-2 border-[#141210] px-3 py-1.5 text-xs font-bold transition-colors sm:px-4 sm:text-sm";
-  return variant === "primary"
-    ? `${base} bg-[#ff6a00] text-white hover:bg-[#d94e00]`
-    : `${base} bg-white text-[#141210] hover:bg-[#fbf3e4]`;
-}
+import PlannerButton from "./ui/PlannerButton";
 
 export default function PlannerNav() {
   const { user, signOut } = useAuth();
@@ -21,47 +13,47 @@ export default function PlannerNav() {
   };
 
   return (
-    <nav className="shrink-0 border-b-2 border-[#141210] bg-white">
+    <header className="shrink-0 border-b border-black/[0.06] bg-white/90 backdrop-blur-xl">
       <div className="flex h-14 items-center justify-between gap-3 px-4 sm:px-6">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <Link
             href="/"
-            className="shrink-0 font-[family-name:var(--font-anton)] text-xl tracking-wide text-[#141210] sm:text-2xl"
+            className="shrink-0 font-[family-name:var(--font-anton)] text-xl tracking-wide text-ink sm:text-2xl"
           >
             KEN<span className="text-white [-webkit-text-stroke:1.5px_#141210]">Z</span>
           </Link>
           <Link
             href="/"
-            className="hidden text-xs font-bold text-[#141210]/70 transition-colors hover:text-[#ff6a00] sm:inline"
+            className="hidden text-sm font-medium text-ink/55 transition-colors hover:text-orange sm:inline"
           >
-            ← Back to site
+            Back to site
           </Link>
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3">
           {user && (
-            <span className="hidden max-w-[8rem] truncate text-sm font-medium text-[#141210]/70 sm:inline">
+            <span className="hidden max-w-[9rem] truncate text-sm text-ink/55 sm:inline">
               {user.username ? `@${user.username}` : user.name}
             </span>
           )}
-          <Link href="/" className="inline-flex text-xs font-bold text-[#141210]/70 hover:text-[#ff6a00] sm:hidden">
-            ← Home
+          <Link href="/" className="text-sm font-medium text-ink/55 hover:text-orange sm:hidden">
+            Home
           </Link>
-          <Link href="/planner" className={pillLinkClass("primary")}>
-            Plan Trip
+          <Link
+            href="/chat"
+            className="inline-flex items-center justify-center rounded-full bg-white px-4 py-2 text-xs font-semibold text-ink ring-1 ring-black/10 transition-all hover:ring-orange/30 sm:text-sm"
+          >
+            Chat
           </Link>
-          <Link href="/chat" className={pillLinkClass("secondary")}>
-            Open chat
-          </Link>
-          <PillButton
-            variant="secondary"
+          <PlannerButton
+            variant="ghost"
             onClick={handleSignOut}
-            className="px-3 py-1.5 text-xs sm:px-4 sm:text-sm"
+            className="!px-4 !py-2 text-xs sm:text-sm"
           >
             Log out
-          </PillButton>
+          </PlannerButton>
         </div>
       </div>
-    </nav>
+    </header>
   );
 }

@@ -11,31 +11,31 @@ export const MILESTONES: Milestone[] = [
     id: "destination",
     label: "Destination",
     description: "Choose where to go",
-    icon: "🎯",
+    icon: "D",
   },
   {
     id: "style",
     label: "Travel Style",
     description: "Set your vibe",
-    icon: "✨",
+    icon: "S",
   },
   {
     id: "timeline",
     label: "Timeline",
-    description: "When & how long",
-    icon: "📅",
+    description: "When and how long",
+    icon: "T",
   },
   {
     id: "logistics",
     label: "Logistics",
-    description: "Stay & transport",
-    icon: "🚗",
+    description: "Stay and transport",
+    icon: "L",
   },
   {
     id: "review",
     label: "Review",
     description: "Finalize plan",
-    icon: "✓",
+    icon: "R",
   },
 ];
 
@@ -187,7 +187,7 @@ export const DUBAI_DATA: DubaiTravelData = {
 export const DESTINATION_DATA = {
   dubai: {
     name: "Dubai",
-    icon: "🏙️",
+    icon: "DXB",
     tagline: "Where ambition meets tradition",
     highlights: ["Burj Khalifa", "Dubai Mall", "Desert Safari", "Old Dubai"],
     bestFor: ["Luxury", "Shopping", "Architecture", "Nightlife"],
@@ -195,7 +195,7 @@ export const DESTINATION_DATA = {
   },
   "abu-dhabi": {
     name: "Abu Dhabi",
-    icon: "🕌",
+    icon: "AUH",
     tagline: "The soul of the Emirates",
     highlights: ["Sheikh Zayed Mosque", "Louvre Abu Dhabi", "Yas Island", "Corniche"],
     bestFor: ["Culture", "Family", "Beaches", "History"],
@@ -203,7 +203,7 @@ export const DESTINATION_DATA = {
   },
   both: {
     name: "Dubai + Abu Dhabi",
-    icon: "✈️",
+    icon: "UAE",
     tagline: "The complete Emirates experience",
     highlights: ["Both city highlights", "Desert between cities", "Cultural contrast"],
     bestFor: ["First-timers", "Explorers", "Culture seekers"],

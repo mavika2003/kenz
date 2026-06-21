@@ -1,15 +1,15 @@
 import type { ButtonHTMLAttributes } from "react";
 
 const base =
-  "rounded-full border-2 border-black text-sm font-semibold transition-colors";
+  "rounded-full border text-sm font-semibold transition-all active:scale-[0.98]";
 
 const variants = {
   primary:
-    "bg-black px-4 py-2 text-white hover:bg-orange hover:border-orange",
+    "border-orange bg-black px-4 py-2 text-white hover:bg-orange hover:border-orange",
   secondary:
-    "bg-white px-4 py-2 text-black hover:bg-paper",
+    "border-black/15 bg-white px-4 py-2 text-black hover:border-orange hover:text-orange-deep",
   large:
-    "inline-flex items-center justify-center bg-black px-7 py-3.5 text-base font-bold text-white shadow-[4px_4px_0_#ff6a00] transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_#ff6a00]",
+    "inline-flex items-center justify-center border-orange bg-black px-7 py-3.5 text-base font-semibold text-white hover:bg-orange hover:shadow-[0_12px_32px_rgba(255,106,0,0.28)]",
 } as const;
 
 type PillButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {

@@ -1,24 +1,28 @@
 import Nav from "@/components/Nav";
 import Hero from "@/components/Hero";
+import { CinematicSoundProvider } from "@/components/CinematicSoundContext";
+import CinematicMoments from "@/components/CinematicMoments";
 import WhoSection from "@/components/WhoSection";
-import BookSection from "@/components/BookSection";
-import ChaptersGrid from "@/components/ChaptersGrid";
-import InvestBlock from "@/components/InvestBlock";
+import ExperiencesBento from "@/components/ExperiencesBento";
+import HowItWorks from "@/components/HowItWorks";
+import NeighborhoodsSection from "@/components/NeighborhoodsSection";
 import Footer from "@/components/Footer";
-import RevealObserver from "@/components/RevealObserver";
 
 export default function Home() {
   return (
     <>
-      <RevealObserver />
-      <Nav />
-      <main>
-        <Hero />
-        <WhoSection />
-        <BookSection />
-        <ChaptersGrid />
-        <InvestBlock />
-      </main>
+      <div className="film-grain" aria-hidden="true" />
+      <Nav overlay />
+      <CinematicSoundProvider>
+        <main className="overflow-x-hidden">
+          <Hero />
+          <WhoSection />
+          <CinematicMoments />
+          <ExperiencesBento />
+          <HowItWorks />
+          <NeighborhoodsSection />
+        </main>
+      </CinematicSoundProvider>
       <Footer />
     </>
   );
