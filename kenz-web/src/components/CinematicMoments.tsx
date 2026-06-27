@@ -2,25 +2,19 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useCinematicSound } from "@/components/CinematicSoundContext";
 import { CINEMATIC_SCENES } from "@/data/cinematic-scenes";
 import { sceneVideoSrc } from "@/data/cinematic-scenes";
 import MotionReveal from "./MotionReveal";
 import BezelCard from "./ui/BezelCard";
-import CinematicSoundToggle from "./ui/CinematicSoundToggle";
 import { easePremium } from "@/lib/motion";
-
-function applyAudioState(el: HTMLVideoElement, audioOn: boolean) {
-  el.muted = !audioOn;
-  el.volume = audioOn ? 0.65 : 0;
-}
 
 export default function CinematicMoments() {
   const reduceMotion = useReducedMotion();
-  const { soundEnabled } = useCinematicSound();
   const videoRefs = useRef<Record<string, HTMLVideoElement | null>>({});
   const indexRef = useRef(0);
   const [index, setIndex] = useState(0);
+  const [readyScenes, setReadyScenes] = useState<Record<string, boolean>>({});
+  const [displayedIndex, setDisplayedIndex] = useState(0);
   const scene = CINEMATIC_SCENES[index];
 
   indexRef.current = index;
@@ -30,20 +24,25 @@ export default function CinematicMoments() {
   }, []);
 
   useEffect(() => {
+    const active = CINEMATIC_SCENES[index];
+    if (readyScenes[active.id]) {
+      setDisplayedIndex(index);
+    }
+  }, [index, readyScenes]);
+
+  useEffect(() => {
     CINEMATIC_SCENES.forEach((s) => {
       const el = videoRefs.current[s.id];
       if (!el) return;
       const isActive = s.id === scene.id;
-      const audioOn = soundEnabled && isActive;
-      applyAudioState(el, audioOn);
+      el.muted = true;
       if (isActive) {
-        void el.play().catch(() => {
-          applyAudioState(el, false);
-          void el.play().catch(() => undefined);
-        });
+        void el.play().catch(() => undefined);
+      } else {
+        el.pause();
       }
     });
-  }, [scene.id, soundEnabled]);
+  }, [scene.id]);
 
   const handleEnded = useCallback(
     (sceneId: string) => {
@@ -53,6 +52,10 @@ export default function CinematicMoments() {
     },
     [advanceScene, reduceMotion],
   );
+
+  const markReady = useCallback((sceneId: string) => {
+    setReadyScenes((prev) => (prev[sceneId] ? prev : { ...prev, [sceneId]: true }));
+  }, []);
 
   return (
     <section className="relative overflow-hidden bg-[#141210] py-28 md:py-40">
@@ -86,7 +89,6 @@ export default function CinematicMoments() {
                   {s.label}
                 </button>
               ))}
-              <CinematicSoundToggle className="ml-auto" />
             </div>
           </MotionReveal>
         </div>
@@ -95,48 +97,47 @@ export default function CinematicMoments() {
           <BezelCard
             dark
             className="overflow-hidden"
-            innerClassName="relative min-h-[min(70vh,520px)] p-0"
+            innerClassName="relative min-h-[min(70vh,520px)] bg-[#141210] p-0"
           >
-            <div className="absolute inset-0">
+            <div className="absolute inset-0 bg-[#141210]">
               {CINEMATIC_SCENES.map((s, i) => {
                 const isActive = index === i;
-                const audioOn = soundEnabled && isActive;
+                const isDisplayed = displayedIndex === i;
+                const shouldMount = isActive || isDisplayed;
+                const isReady = readyScenes[s.id] === true;
+                const visible = isDisplayed && isReady;
 
                 return (
                   <motion.div
                     key={s.id}
                     className="absolute inset-0"
                     initial={false}
-                    animate={{ opacity: isActive ? 1 : 0 }}
+                    animate={{ opacity: visible ? 1 : 0 }}
                     transition={{ duration: 1.2, ease: easePremium }}
-                    style={{ zIndex: isActive ? 2 : 1 }}
+                    style={{ zIndex: isDisplayed ? 2 : 1 }}
                   >
-                    <div
-                      className="absolute inset-0 bg-cover bg-center"
-                      style={{ backgroundImage: `url(${s.poster})` }}
-                    />
-                    <video
-                      ref={(el) => {
-                        videoRefs.current[s.id] = el;
-                      }}
-                      autoPlay
-                      muted={!audioOn}
-                      playsInline
-                      preload="auto"
-                      poster={s.poster}
-                      onLoadedData={(e) => {
-                        if (s.id === CINEMATIC_SCENES[indexRef.current].id) {
-                          void e.currentTarget.play().catch(() => undefined);
-                        }
-                      }}
-                      onPlay={(e) => {
-                        applyAudioState(e.currentTarget, audioOn);
-                      }}
-                      onEnded={() => handleEnded(s.id)}
-                      className="absolute inset-0 h-full w-full object-cover"
-                    >
-                      <source src={sceneVideoSrc(s)} type="video/mp4" />
-                    </video>
+                    {shouldMount && (
+                      <video
+                        ref={(el) => {
+                          videoRefs.current[s.id] = el;
+                          if (el) el.muted = true;
+                        }}
+                        src={sceneVideoSrc(s)}
+                        autoPlay={isActive}
+                        muted
+                        playsInline
+                        preload={isActive ? "auto" : "metadata"}
+                        onLoadedData={(e) => {
+                          markReady(s.id);
+                          if (s.id === CINEMATIC_SCENES[indexRef.current].id) {
+                            e.currentTarget.muted = true;
+                            void e.currentTarget.play().catch(() => undefined);
+                          }
+                        }}
+                        onEnded={() => handleEnded(s.id)}
+                        className="absolute inset-0 h-full w-full object-cover"
+                      />
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-[#141210] via-[#141210]/35 to-transparent" />
                   </motion.div>
                 );

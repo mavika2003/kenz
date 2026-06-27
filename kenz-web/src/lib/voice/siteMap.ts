@@ -22,7 +22,8 @@ export const SECTION_LABELS: Record<VoiceSection, string> = {
 
 export const SESSION_ID_KEY = "kenz_voice_session_id";
 export const SESSION_TURNS_KEY = "kenz_voice_turns_used";
-export const SESSION_TURN_LIMIT = 50;
+export const SESSION_TURN_LIMIT = 100;
+export const VOICE_START_NEW_TRIP_KEY = "kenz_voice_start_new_trip";
 
 export function getOrCreateVoiceSessionId(): string {
   if (typeof window === "undefined") return "";

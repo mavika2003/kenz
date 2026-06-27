@@ -1,8 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import { useCallback, useEffect, useRef } from "react";
-import { useCinematicSound } from "@/components/CinematicSoundContext";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { CinematicScene } from "@/data/cinematic-scenes";
 import { sceneVideoSrc } from "@/data/cinematic-scenes";
 import { easePremium } from "@/lib/motion";
@@ -15,14 +14,6 @@ type CinematicVideoBackgroundProps = {
   onSceneEnded?: () => void;
 };
 
-function applyAudioState(
-  el: HTMLVideoElement,
-  audioOn: boolean,
-) {
-  el.muted = !audioOn;
-  el.volume = audioOn ? 0.65 : 0;
-}
-
 export default function CinematicVideoBackground({
   scenes,
   activeId,
@@ -31,39 +22,51 @@ export default function CinematicVideoBackground({
   onSceneEnded,
 }: CinematicVideoBackgroundProps) {
   const reduceMotion = useReducedMotion();
-  const { soundEnabled } = useCinematicSound();
   const videoRefs = useRef<Record<string, HTMLVideoElement | null>>({});
   const activeIdRef = useRef(activeId);
+  const [readyScenes, setReadyScenes] = useState<Record<string, boolean>>({});
+  const [displayedId, setDisplayedId] = useState(activeId);
 
   activeIdRef.current = activeId;
 
-  const playScene = useCallback((sceneId: string, fromStart = true) => {
-    const el = videoRefs.current[sceneId];
+  const tryPlay = useCallback((el: HTMLVideoElement) => {
+    el.muted = true;
+    void el.play().catch(() => undefined);
+  }, []);
+
+  const markReady = useCallback((sceneId: string) => {
+    setReadyScenes((prev) => (prev[sceneId] ? prev : { ...prev, [sceneId]: true }));
+  }, []);
+
+  /* Keep the previous scene on screen until the next one has buffered */
+  useEffect(() => {
+    if (readyScenes[activeId]) {
+      setDisplayedId(activeId);
+    }
+  }, [activeId, readyScenes]);
+
+  useLayoutEffect(() => {
+    const el = videoRefs.current[activeId];
     if (!el) return;
-    if (fromStart) el.currentTime = 0;
-    const audioOn = soundEnabled && sceneId === activeIdRef.current;
-    applyAudioState(el, audioOn);
-    void el.play().catch(() => {
-      applyAudioState(el, false);
-      void el.play().catch(() => undefined);
-    });
-  }, [soundEnabled]);
+    if (el.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+      markReady(activeId);
+    }
+    tryPlay(el);
+  }, [activeId, markReady, tryPlay]);
 
   useEffect(() => {
     scenes.forEach((scene) => {
       const el = videoRefs.current[scene.id];
       if (!el) return;
-      const isActive = scene.id === activeId;
-      const audioOn = soundEnabled && isActive;
-      applyAudioState(el, audioOn);
-      if (isActive && el.paused) {
-        void el.play().catch(() => {
-          applyAudioState(el, false);
-          void el.play().catch(() => undefined);
-        });
+      const shouldPlay = scene.id === activeId || scene.id === displayedId;
+      if (!shouldPlay) {
+        el.pause();
+        return;
       }
+      el.muted = true;
+      if (scene.id === activeId && el.paused) tryPlay(el);
     });
-  }, [activeId, scenes, soundEnabled]);
+  }, [activeId, displayedId, scenes, tryPlay]);
 
   const handleEnded = useCallback(
     (sceneId: string) => {
@@ -75,35 +78,37 @@ export default function CinematicVideoBackground({
 
   return (
     <div
-      className={`pointer-events-none absolute inset-0 z-0 overflow-hidden ${className}`}
+      className={`pointer-events-none absolute inset-0 z-0 overflow-hidden bg-[#141210] ${className}`}
       aria-hidden="true"
     >
       {scenes.map((scene) => {
-        const isActive = scene.id === activeId;
-        const audioOn = soundEnabled && isActive;
+        const isDisplayed = scene.id === displayedId;
+        const shouldMount = scene.id === activeId || scene.id === displayedId;
+        const isReady = readyScenes[scene.id] === true;
+        const visible = isDisplayed && isReady;
 
         return (
           <motion.div
             key={scene.id}
             className="absolute inset-0"
             initial={false}
-            animate={{ opacity: isActive ? 1 : 0 }}
+            animate={{ opacity: visible ? 1 : 0 }}
             transition={{
               duration: reduceMotion ? 0 : 1.2,
               ease: easePremium,
             }}
-            style={{ zIndex: isActive ? 2 : 1 }}
+            style={{ zIndex: isDisplayed ? 2 : 1 }}
           >
             <motion.div
               className="absolute inset-0"
               initial={false}
               animate={
-                reduceMotion || !kenBurns || !isActive
+                reduceMotion || !kenBurns || !visible
                   ? { scale: 1 }
                   : { scale: [1, 1.05] }
               }
               transition={
-                reduceMotion || !kenBurns || !isActive
+                reduceMotion || !kenBurns || !visible
                   ? undefined
                   : {
                       duration: 5,
@@ -113,44 +118,30 @@ export default function CinematicVideoBackground({
                     }
               }
             >
-              <video
-                ref={(el) => {
-                  videoRefs.current[scene.id] = el;
-                  // React does not render the `muted` prop as an HTML attribute,
-                  // so browsers block autoplay. Set it imperatively on the element
-                  // the moment the ref is assigned so autoplay works on page load.
-                  if (el) el.muted = true;
-                }}
-                autoPlay
-                playsInline
-                preload="auto"
-                onCanPlay={(e) => {
-                  if (scene.id !== activeIdRef.current) return;
-                  const el = e.currentTarget;
-                  const on = soundEnabled && scene.id === activeIdRef.current;
-                  applyAudioState(el, on);
-                  void el.play().catch(() => {
-                    applyAudioState(el, false);
-                    void el.play().catch(() => undefined);
-                  });
-                }}
-                onPlay={(e) => {
-                  applyAudioState(e.currentTarget, audioOn);
-                }}
-                onEnded={() => handleEnded(scene.id)}
-                onError={(e) => {
-                  const el = e.currentTarget;
-                  if (el.dataset.fallbackTried === "1") return;
-                  el.dataset.fallbackTried = "1";
-                  while (el.firstChild) el.removeChild(el.firstChild);
-                  el.src = scene.fallbackSrc;
-                  void el.load();
-                  void el.play().catch(() => undefined);
-                }}
-                className="absolute inset-0 h-full w-full object-cover"
-              >
-                <source src={sceneVideoSrc(scene)} type="video/mp4" />
-              </video>
+              {shouldMount && (
+                <video
+                  ref={(el) => {
+                    videoRefs.current[scene.id] = el;
+                    if (el) el.muted = true;
+                  }}
+                  src={sceneVideoSrc(scene)}
+                  muted
+                  playsInline
+                  autoPlay={scene.id === activeId}
+                  preload={scene.id === activeId ? "auto" : "metadata"}
+                  onLoadedData={(e) => {
+                    markReady(scene.id);
+                    if (scene.id === activeIdRef.current) tryPlay(e.currentTarget);
+                  }}
+                  onCanPlay={(e) => {
+                    markReady(scene.id);
+                    if (scene.id !== activeIdRef.current) return;
+                    tryPlay(e.currentTarget);
+                  }}
+                  onEnded={() => handleEnded(scene.id)}
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
+              )}
             </motion.div>
           </motion.div>
         );

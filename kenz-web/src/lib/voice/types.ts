@@ -1,6 +1,7 @@
 export type VoiceActionType =
   | "scroll"
   | "navigate"
+  | "start_new_trip"
   | "planner_go_to"
   | "planner_set"
   | "planner_complete"

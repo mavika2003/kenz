@@ -1,6 +1,5 @@
 import Nav from "@/components/Nav";
 import Hero from "@/components/Hero";
-import { CinematicSoundProvider } from "@/components/CinematicSoundContext";
 import CinematicMoments from "@/components/CinematicMoments";
 import WhoSection from "@/components/WhoSection";
 import ExperiencesBento from "@/components/ExperiencesBento";
@@ -13,16 +12,14 @@ export default function Home() {
     <>
       <div className="film-grain" aria-hidden="true" />
       <Nav overlay />
-      <CinematicSoundProvider>
-        <main className="overflow-x-hidden">
-          <Hero />
-          <WhoSection />
-          <CinematicMoments />
-          <ExperiencesBento />
-          <HowItWorks />
-          <NeighborhoodsSection />
-        </main>
-      </CinematicSoundProvider>
+      <main className="overflow-x-hidden">
+        <Hero />
+        <WhoSection />
+        <CinematicMoments />
+        <ExperiencesBento />
+        <HowItWorks />
+        <NeighborhoodsSection />
+      </main>
       <Footer />
     </>
   );

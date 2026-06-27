@@ -1,56 +1,62 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useDashboard } from "@/components/dashboard/DashboardContext";
 import { useVoiceAgent } from "./VoiceAgentContext";
-import type { PlanState, Milestone } from "@/lib/planner/types";
-import { MILESTONES } from "@/lib/planner/data";
-
-const MILESTONE_PROMPTS: Record<string, string> = {
-  destination:
-    "Where would you like to go? You can choose Dubai, Abu Dhabi, or visit both!",
-  style:
-    "What's your travel style? Tell me if you're thinking luxury, balanced, budget, or backpacker.",
-  logistics:
-    "Let's sort the details — how many travellers, how many days, when you're going, where you'll stay, and how you'll get around.",
-  review:
-    "Your plan looks amazing! Say 'save it' when you're ready, or let me know if you'd like to change anything.",
-};
+import {
+  getCurrentPlanStep,
+  PLAN_STEP_PROMPTS,
+  stepIndex,
+  voiceMilestoneForPlanStep,
+} from "@/lib/planner/planSteps";
+import type { PlanState } from "@/lib/planner/types";
 
 type PlannerVoiceBridgeProps = {
-  activeMilestone: Milestone;
-  setActiveMilestone: (milestone: Milestone) => void;
+  planState: PlanState;
   updatePlan: (updates: Partial<PlanState>) => void;
   markMilestoneComplete: (milestoneId: string) => void;
 };
 
 export default function PlannerVoiceBridge({
-  activeMilestone,
-  setActiveMilestone,
+  planState,
   updatePlan,
   markMilestoneComplete,
 }: PlannerVoiceBridgeProps) {
+  const { isNewTrip } = useDashboard();
   const {
     conversationActive,
     registerPlannerHandlers,
     unregisterPlannerHandlers,
     setPlannerMilestone,
+    setFocusedPlanStep,
     announceMessage,
   } = useVoiceAgent();
 
-  // Track the previous milestone so we only announce on genuine changes.
-  const prevMilestoneRef = useRef<string | null>(null);
+  const planStateRef = useRef(planState);
+  planStateRef.current = planState;
 
-  // Keep milestone context ref in sync for the voice API.
+  const prevStepRef = useRef<string | null>(null);
+
+  const currentStep = getCurrentPlanStep(planState);
+  const voiceMilestone = voiceMilestoneForPlanStep(currentStep);
+
+  /* Keep voice API context aligned with the Build-your-trip checklist */
   useEffect(() => {
-    setPlannerMilestone(activeMilestone.id);
-  }, [activeMilestone.id, setPlannerMilestone]);
+    if (!isNewTrip) return;
+    setPlannerMilestone(voiceMilestone);
+  }, [isNewTrip, setPlannerMilestone, voiceMilestone]);
 
-  // Register handlers whenever the callbacks change.
   useEffect(() => {
     registerPlannerHandlers({
-      goToMilestone: (milestoneId: string) => {
-        const milestone = MILESTONES.find((m) => m.id === milestoneId);
-        if (milestone) setActiveMilestone(milestone);
+      getPlanState: () => planStateRef.current,
+      setFocusedPlanStep: (step) => {
+        const current = getCurrentPlanStep(planStateRef.current);
+        const focus = stepIndex(step) > stepIndex(current) ? current : step;
+        setFocusedPlanStep(focus);
+        setPlannerMilestone(voiceMilestoneForPlanStep(focus));
+      },
+      goToMilestone: (stepId) => {
+        setPlannerMilestone(voiceMilestoneForPlanStep(stepId as typeof currentStep));
       },
       updatePlan,
       completeMilestone: markMilestoneComplete,
@@ -63,30 +69,28 @@ export default function PlannerVoiceBridge({
   }, [
     markMilestoneComplete,
     registerPlannerHandlers,
-    setActiveMilestone,
+    setFocusedPlanStep,
     setPlannerMilestone,
     unregisterPlannerHandlers,
     updatePlan,
   ]);
 
-  // Announce the prompt for the new milestone when conversation is active
-  // and the milestone actually changed (not just a re-render).
+  /* Announce the prompt for the new checklist step during voice planning */
   useEffect(() => {
-    if (!conversationActive) {
-      prevMilestoneRef.current = activeMilestone.id;
+    if (!isNewTrip || !conversationActive) {
+      prevStepRef.current = currentStep;
       return;
     }
 
-    if (prevMilestoneRef.current === activeMilestone.id) return;
-    prevMilestoneRef.current = activeMilestone.id;
+    if (prevStepRef.current === currentStep) return;
+    prevStepRef.current = currentStep;
 
-    const prompt = MILESTONE_PROMPTS[activeMilestone.id];
+    const prompt = PLAN_STEP_PROMPTS[currentStep];
     if (prompt) {
-      // Short delay so Kenzr's previous reply finishes speaking first.
       const t = window.setTimeout(() => announceMessage(prompt), 400);
       return () => window.clearTimeout(t);
     }
-  }, [activeMilestone.id, announceMessage, conversationActive]);
+  }, [announceMessage, conversationActive, currentStep, isNewTrip]);
 
   return null;
 }

@@ -1,50 +1,53 @@
 import type { PlanState } from "@/lib/planner/types";
+import {
+  buildPlannerSetUpdates,
+  mapVoiceMilestoneToPlanStep,
+  type PlanStepId,
+} from "@/lib/planner/planSteps";
 import type { VoiceAction } from "./types";
-import { VOICE_SECTIONS } from "./siteMap";
+import { VOICE_SECTIONS, VOICE_START_NEW_TRIP_KEY } from "./siteMap";
 
 export type PlannerVoiceHandlers = {
   goToMilestone: (milestoneId: string) => void;
   updatePlan: (updates: Partial<PlanState>) => void;
   completeMilestone: (milestoneId: string) => void;
+  getPlanState: () => PlanState;
+  setFocusedPlanStep: (step: PlanStepId) => void;
+};
+
+export type DashboardVoiceHandlers = {
+  startNewTrip: (options?: { skipReset?: boolean }) => void;
 };
 
 export type ExecuteVoiceActionsOptions = {
   actions: VoiceAction[];
   pathname: string;
-  isAuthenticated: boolean;
   navigate: (href: string) => void;
   plannerHandlers: PlannerVoiceHandlers | null;
+  dashboardHandlers: DashboardVoiceHandlers | null;
   queuePlannerActions: (actions: VoiceAction[]) => void;
 };
+
+/** If navigating to the planner for trip planning, always open New Trip mode */
+export function ensureNewTripForPlannerNav(actions: VoiceAction[]): VoiceAction[] {
+  const navIdx = actions.findIndex(
+    (a) =>
+      a.type === "navigate" &&
+      (a.route === "/planner" ||
+        (a.route === "/login" && a.query?.next === "/planner")),
+  );
+  if (navIdx === -1) return actions;
+  if (actions.some((a) => a.type === "start_new_trip")) return actions;
+
+  const next = [...actions];
+  next.splice(navIdx + 1, 0, { type: "start_new_trip" });
+  return next;
+}
 
 function buildHref(route: string, query?: Record<string, string>): string {
   if (!query || Object.keys(query).length === 0) return route;
   const params = new URLSearchParams(query);
   return `${route}?${params.toString()}`;
-}
-
-function mapPlannerSetValue(
-  field: string,
-  value: string | number | undefined,
-): Partial<PlanState> | null {
-  if (value === undefined) return null;
-
-  switch (field) {
-    case "destination":
-      return { destination: value as PlanState["destination"] };
-    case "travelStyle":
-      return { travelStyle: value as PlanState["travelStyle"] };
-    case "duration":
-      return { duration: Number(value) };
-    case "travelers":
-      return { travelers: Number(value) };
-    case "accommodation":
-      return { accommodation: value as PlanState["accommodation"] };
-    case "transport":
-      return { transport: value as PlanState["transport"] };
-    default:
-      return null;
-  }
 }
 
 function isPlannerAction(action: VoiceAction): boolean {
@@ -59,8 +62,12 @@ function executePlannerAction(
   action: VoiceAction,
   handlers: PlannerVoiceHandlers,
 ): void {
+  let plan = handlers.getPlanState();
+
   if (action.type === "planner_go_to" && action.milestone) {
-    handlers.goToMilestone(action.milestone);
+    const step = mapVoiceMilestoneToPlanStep(action.milestone, plan);
+    handlers.setFocusedPlanStep(step);
+    handlers.goToMilestone(step);
     return;
   }
 
@@ -69,30 +76,48 @@ function executePlannerAction(
     return;
   }
 
-  if (action.type === "planner_set" && action.field) {
-    const updates = mapPlannerSetValue(action.field, action.value);
-    if (updates) handlers.updatePlan(updates);
+  if (action.type === "planner_set" && action.field && action.value !== undefined) {
+    const updates = buildPlannerSetUpdates(plan, action.field, action.value);
+    if (updates) {
+      plan = { ...plan, ...updates };
+      handlers.updatePlan(updates);
+    }
   }
 }
 
 export async function executeVoiceActions(
   options: ExecuteVoiceActionsOptions,
 ): Promise<void> {
-  const { actions, pathname, isAuthenticated, navigate, plannerHandlers, queuePlannerActions } =
-    options;
+  const {
+    actions,
+    pathname,
+    navigate,
+    plannerHandlers,
+    queuePlannerActions,
+  } = options;
 
   const onPlanner = pathname.startsWith("/planner");
   const deferredPlanner: VoiceAction[] = [];
 
-  // Check if there is a navigate-to-planner action in this batch so we know
-  // to defer planner actions until the page has loaded rather than fire them
-  // immediately (which would fail because the planner bridge isn't mounted yet).
   const hasPlannerNavigate = actions.some(
     (a) => a.type === "navigate" && a.route === "/planner",
+  );
+  const hasLoginNavigate = actions.some(
+    (a) =>
+      a.type === "navigate" &&
+      a.route === "/login" &&
+      a.query?.next === "/planner",
   );
 
   for (const action of actions) {
     if (action.type === "noop") continue;
+
+    if (action.type === "start_new_trip") {
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem(VOICE_START_NEW_TRIP_KEY, "1");
+      }
+      continue;
+    }
 
     if (action.type === "scroll" && action.target) {
       const target = action.target;
@@ -117,9 +142,7 @@ export async function executeVoiceActions(
     }
 
     if (isPlannerAction(action)) {
-      // If we're navigating to the planner in this same batch, defer all
-      // planner actions — the bridge will flush them once it mounts.
-      if (hasPlannerNavigate || (!onPlanner && !plannerHandlers)) {
+      if (hasPlannerNavigate || hasLoginNavigate || (!onPlanner && !plannerHandlers)) {
         deferredPlanner.push(action);
         continue;
       }
@@ -185,9 +208,29 @@ export function flushPlannerActions(
   actions: VoiceAction[],
   handlers: PlannerVoiceHandlers,
 ): void {
+  let plan = handlers.getPlanState();
+
   for (const action of actions) {
-    if (isPlannerAction(action)) {
-      executePlannerAction(action, handlers);
+    if (!isPlannerAction(action)) continue;
+
+    if (action.type === "planner_set" && action.field && action.value !== undefined) {
+      const updates = buildPlannerSetUpdates(plan, action.field, action.value);
+      if (updates) {
+        plan = { ...plan, ...updates };
+        handlers.updatePlan(updates);
+      }
+      continue;
+    }
+
+    if (action.type === "planner_go_to" && action.milestone) {
+      const step = mapVoiceMilestoneToPlanStep(action.milestone, plan);
+      handlers.setFocusedPlanStep(step);
+      handlers.goToMilestone(step);
+      continue;
+    }
+
+    if (action.type === "planner_complete" && action.milestone) {
+      handlers.completeMilestone(action.milestone);
     }
   }
 }

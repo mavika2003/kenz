@@ -17,7 +17,6 @@ import { useRouter } from "next/navigation";
 import { ArrowRight, Microphone } from "@phosphor-icons/react";
 import { CINEMATIC_SCENES } from "@/data/cinematic-scenes";
 import CinematicVideoBackground from "./ui/CinematicVideoBackground";
-import CinematicSoundToggle from "./ui/CinematicSoundToggle";
 import { easePremium } from "@/lib/motion";
 import { useAuth } from "./AuthProvider";
 import { loginPageUrl } from "@/lib/auth";
@@ -89,6 +88,11 @@ export default function Hero() {
     void el.play().catch(() => undefined);
   }, [isConfigured]);
 
+  /* Keep mic + panel anchored to the chat row on homepage load */
+  useEffect(() => {
+    setExpanded(false);
+  }, [setExpanded]);
+
   const advanceScene = useCallback(() => {
     setSceneIndex((i) => (i + 1) % CINEMATIC_SCENES.length);
   }, []);
@@ -139,19 +143,12 @@ export default function Hero() {
         onSceneEnded={advanceScene}
       />
 
-      {/* Sound toggle */}
-      <div className="pointer-events-none absolute bottom-6 right-6 z-20 md:bottom-8 md:right-8">
-        <div className="pointer-events-auto">
-          <CinematicSoundToggle />
-        </div>
-      </div>
-
       {/* Content */}
       <motion.div
         style={{ y: reduceMotion ? 0 : contentY }}
         className="relative z-10 flex min-h-[100dvh] flex-col items-center justify-end px-5 pb-24 pt-24 text-center"
       >
-        <div className="flex w-full max-w-[42rem] flex-col items-center">
+        <div className="flex w-full max-w-[42rem] flex-col items-center overflow-visible">
 
           {/* ── Headline ─────────────────────────────────────────────── */}
           <motion.h1
@@ -208,12 +205,12 @@ export default function Hero() {
             </AnimatePresence>
           </motion.div>
 
-          {/* ── Chatbox row (input + Talk to Kenzr button) ───────────── */}
+          {/* ── Chatbox row (input + Talk to Kenzr) ───────────── */}
           <motion.div
             initial={reduceMotion ? false : { opacity: 0, y: 28, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 0.65, delay: 0.13, ease: easePremium }}
-            className="mt-3 flex w-full items-center gap-3"
+            className="mt-3 flex w-full items-center gap-3 overflow-visible"
           >
             <motion.div
               animate={
@@ -264,9 +261,9 @@ export default function Hero() {
               </button>
             </motion.div>
 
-            {/* ── Talk to Kenzr — mic + inline panel to its right ─────── */}
+            {/* ── Talk to Kenzr — mic + compact panel anchored to its right ── */}
             {isConfigured && (
-              <div className="relative shrink-0 self-center">
+              <div className="relative h-14 shrink-0">
                 <motion.button
                   type="button"
                   onClick={handleTalkToKenzr}
@@ -330,15 +327,20 @@ export default function Hero() {
                     <KenzrVoicePanel
                       key="kenzr-hero-panel"
                       variant="hero"
+                      compact
                       conversationActive={conversationActive}
                       status={status}
+                      onClose={() => {
+                        stopConversation();
+                        setExpanded(false);
+                      }}
                       className="absolute top-1/2 left-[calc(100%+0.75rem)] z-30 -translate-y-1/2"
                     />
                   )}
                 </AnimatePresence>
 
                 <span
-                  className={`pointer-events-none absolute left-1/2 top-full mt-1.5 -translate-x-1/2 whitespace-nowrap text-[10px] font-semibold uppercase tracking-wider transition-colors duration-500 ${
+                  className={`pointer-events-none absolute top-full left-1/2 mt-1.5 -translate-x-1/2 whitespace-nowrap text-[10px] font-semibold uppercase tracking-wider transition-colors duration-500 ${
                     kenzrHighlighted ? "text-white" : "text-white/60"
                   }`}
                 >

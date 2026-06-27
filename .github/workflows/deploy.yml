@@ -42,6 +42,9 @@ jobs:
       - name: Build with Next.js
         env:
           NEXT_PUBLIC_CHAT_API_URL: ${{ vars.NEXT_PUBLIC_CHAT_API_URL }}
+          NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${{ vars.NEXT_PUBLIC_GOOGLE_CLIENT_ID }}
+          NEXT_PUBLIC_GEOAPIFY_API_KEY: ${{ vars.NEXT_PUBLIC_GEOAPIFY_API_KEY }}
+          NEXT_PUBLIC_GOOGLE_PLACES_KEY: ${{ vars.NEXT_PUBLIC_GOOGLE_PLACES_KEY }}
         run: npm run build
 
       - name: Upload artifact

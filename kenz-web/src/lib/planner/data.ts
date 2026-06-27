@@ -37,7 +37,7 @@ export const INITIAL_PLAN_STATE: PlanState = {
   destination: null,
   travelStyle: null,
   duration: 7,
-  travelers: 2,
+  travelers: 0,
   budget: 3000,
   accommodation: null,
   transport: null,
@@ -247,6 +247,7 @@ export function calculateBudget(
   dailyAverage: number;
   recommendations: string[];
 } {
+  const headcount = Math.max(1, travelers);
   const baseRange = DUBAI_DATA.budgetRanges[style];
   const baseDaily = (baseRange.min + baseRange.max) / 2 / 7;
 
@@ -266,7 +267,7 @@ export function calculateBudget(
   const emergencyDaily = baseDaily * 0.05;
 
   const totalPerDay = accommodationDaily + foodDaily + activitiesDaily + transportDaily + emergencyDaily;
-  const total = Math.round(totalPerDay * duration * travelers);
+  const total = Math.round(totalPerDay * duration * headcount);
 
   const recommendations: string[] = [];
 
@@ -287,14 +288,14 @@ export function calculateBudget(
 
   return {
     breakdown: {
-      accommodation: Math.round(accommodationDaily * duration * travelers),
-      transport: Math.round(transportDaily * duration * travelers),
-      food: Math.round(foodDaily * duration * travelers),
-      activities: Math.round(activitiesDaily * duration * travelers),
-      emergency: Math.round(emergencyDaily * duration * travelers),
+      accommodation: Math.round(accommodationDaily * duration * headcount),
+      transport: Math.round(transportDaily * duration * headcount),
+      food: Math.round(foodDaily * duration * headcount),
+      activities: Math.round(activitiesDaily * duration * headcount),
+      emergency: Math.round(emergencyDaily * duration * headcount),
     },
     total,
-    perPerson: Math.round(total / travelers),
+    perPerson: Math.round(total / headcount),
     dailyAverage: Math.round(totalPerDay),
     recommendations,
   };

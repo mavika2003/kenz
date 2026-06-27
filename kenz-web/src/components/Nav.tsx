@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { useAuth } from "./AuthProvider";
 import { ProtectedPlannerLink } from "./ProtectedPlannerLink";
+import KenzLogo from "./ui/KenzLogo";
 import { loginPageUrl } from "@/lib/auth";
 import { easePremium } from "@/lib/motion";
 
@@ -53,25 +54,13 @@ export default function Nav({ overlay = false }: NavProps) {
         <nav
           className={`flex w-full max-w-5xl items-center justify-between gap-3 rounded-full px-3 py-2 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] sm:px-4 ${
             isDarkShell
-              ? "bg-[#141210]/55 text-white ring-1 ring-white/15 backdrop-blur-2xl"
-              : "bg-white/90 text-[#141210] ring-1 ring-black/[0.06] backdrop-blur-xl shadow-[0_8px_40px_rgba(20,18,16,0.06)]"
+              ? "bg-orange/25 text-white ring-1 ring-orange/40 backdrop-blur-2xl"
+              : overlay
+                ? "bg-orange/18 text-[#141210] ring-1 ring-orange/30 backdrop-blur-xl shadow-[0_8px_40px_rgba(255,106,0,0.12)]"
+                : "bg-white/90 text-[#141210] ring-1 ring-black/[0.06] backdrop-blur-xl shadow-[0_8px_40px_rgba(20,18,16,0.06)]"
           }`}
         >
-          <Link
-            href="/"
-            className="shrink-0 px-2 font-[family-name:var(--font-anton)] text-xl tracking-wide sm:text-2xl"
-          >
-            KEN
-            <span
-              className={
-                isDarkShell
-                  ? "text-black [-webkit-text-stroke:1.5px_#ffffff]"
-                  : "text-white [-webkit-text-stroke:1.5px_#141210]"
-              }
-            >
-              Z
-            </span>
-          </Link>
+          <KenzLogo href="/" size={42} />
 
           <div className="hidden items-center gap-6 md:flex">
             {links.map((link) => (

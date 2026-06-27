@@ -14,13 +14,16 @@ import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
 import {
   executeVoiceActions,
+  ensureNewTripForPlannerNav,
   flushPlannerActions,
+  type DashboardVoiceHandlers,
   type PlannerVoiceHandlers,
 } from "@/lib/voice/executeVoiceActions";
 import {
   clearAnonymousVoiceTurns,
   getStoredTurnsUsed,
   SESSION_TURN_LIMIT,
+  VOICE_START_NEW_TRIP_KEY,
 } from "@/lib/voice/siteMap";
 import { fetchChatHistory } from "@/lib/chatApi";
 import {
@@ -31,6 +34,7 @@ import {
 import { useConversationListener } from "@/lib/voice/useConversationListener";
 import { useSpeechSynthesis } from "@/lib/voice/useSpeechSynthesis";
 import type { VoiceAction, VoiceAgentStatus } from "@/lib/voice/types";
+import type { PlanStepId } from "@/lib/planner/planSteps";
 
 type VoiceAgentContextValue = {
   status: VoiceAgentStatus;
@@ -44,6 +48,7 @@ type VoiceAgentContextValue = {
   isConfigured: boolean;
   isAtLimit: boolean;
   isAuthenticated: boolean;
+  focusedPlanStep: PlanStepId | null;
   textInput: string;
   setTextInput: (value: string) => void;
   setExpanded: (open: boolean) => void;
@@ -54,7 +59,10 @@ type VoiceAgentContextValue = {
   submitText: () => void;
   registerPlannerHandlers: (handlers: PlannerVoiceHandlers) => void;
   unregisterPlannerHandlers: () => void;
+  registerDashboardHandlers: (handlers: DashboardVoiceHandlers) => void;
+  unregisterDashboardHandlers: () => void;
   setPlannerMilestone: (milestoneId: string | null) => void;
+  setFocusedPlanStep: (step: PlanStepId | null) => void;
   announceMessage: (text: string) => void;
 };
 
@@ -88,8 +96,10 @@ export function VoiceAgentProvider({ children }: { children: ReactNode }) {
   const [turnsUsed, setTurnsUsed] = useState(0);
   const [turnsLimit, setTurnsLimit] = useState(SESSION_TURN_LIMIT);
   const [textInput, setTextInput] = useState("");
+  const [focusedPlanStep, setFocusedPlanStep] = useState<PlanStepId | null>(null);
 
   const plannerHandlersRef = useRef<PlannerVoiceHandlers | null>(null);
+  const dashboardHandlersRef = useRef<DashboardVoiceHandlers | null>(null);
   const plannerMilestoneRef = useRef<string | null>(null);
   const pendingPlannerRef = useRef<VoiceAction[]>([]);
   const busyRef = useRef(false);
@@ -119,19 +129,42 @@ export function VoiceAgentProvider({ children }: { children: ReactNode }) {
       await executeVoiceActions({
         actions,
         pathname: window.location.pathname,
-        isAuthenticated: Boolean(user),
         navigate: (href) => router.push(href),
         plannerHandlers: plannerHandlersRef.current,
+        dashboardHandlers: dashboardHandlersRef.current,
         queuePlannerActions,
       });
 
-      if (plannerHandlersRef.current && pendingPlannerRef.current.length > 0) {
-        const pending = [...pendingPlannerRef.current];
-        pendingPlannerRef.current = [];
-        flushPlannerActions(pending, plannerHandlersRef.current);
+      const pending = [...pendingPlannerRef.current];
+      pendingPlannerRef.current = [];
+      const hasVoicePlanUpdates = pending.some((a) => a.type === "planner_set");
+
+      if (pending.length > 0) {
+        const plannerDeadline = Date.now() + 4000;
+        while (Date.now() < plannerDeadline && !plannerHandlersRef.current) {
+          await new Promise((resolve) => setTimeout(resolve, 50));
+        }
+        if (plannerHandlersRef.current) {
+          flushPlannerActions(pending, plannerHandlersRef.current);
+        } else {
+          pendingPlannerRef.current = pending;
+        }
+      }
+
+      if (
+        typeof window !== "undefined" &&
+        sessionStorage.getItem(VOICE_START_NEW_TRIP_KEY) &&
+        window.location.pathname.startsWith("/planner")
+      ) {
+        const deadline = Date.now() + 4000;
+        while (Date.now() < deadline && !dashboardHandlersRef.current) {
+          await new Promise((resolve) => setTimeout(resolve, 50));
+        }
+        dashboardHandlersRef.current?.startNewTrip({ skipReset: hasVoicePlanUpdates });
+        sessionStorage.removeItem(VOICE_START_NEW_TRIP_KEY);
       }
     },
-    [pathname, queuePlannerActions, router, user],
+    [queuePlannerActions, router],
   );
 
   const processAgentResponse = useCallback(
@@ -144,8 +177,8 @@ export function VoiceAgentProvider({ children }: { children: ReactNode }) {
       // Split actions: navigation + planner_set + planner_complete run immediately.
       // planner_go_to (milestone switch) waits until AFTER speech so the transition
       // feels smooth — the user hears Kenzr confirm their choice before the UI moves.
-      const immediateActions = response.actions.filter(
-        (a) => a.type !== "planner_go_to",
+      const immediateActions = ensureNewTripForPlannerNav(
+        response.actions.filter((a) => a.type !== "planner_go_to"),
       );
       const deferredGoTo = response.actions.filter(
         (a) => a.type === "planner_go_to",
@@ -353,6 +386,15 @@ export function VoiceAgentProvider({ children }: { children: ReactNode }) {
   const unregisterPlannerHandlers = useCallback(() => {
     plannerHandlersRef.current = null;
     plannerMilestoneRef.current = null;
+    setFocusedPlanStep(null);
+  }, []);
+
+  const registerDashboardHandlers = useCallback((handlers: DashboardVoiceHandlers) => {
+    dashboardHandlersRef.current = handlers;
+  }, []);
+
+  const unregisterDashboardHandlers = useCallback(() => {
+    dashboardHandlersRef.current = null;
   }, []);
 
   const setPlannerMilestone = useCallback((milestoneId: string | null) => {
@@ -384,6 +426,13 @@ export function VoiceAgentProvider({ children }: { children: ReactNode }) {
     conversationActiveRef.current = conversationActive;
   }, [conversationActive]);
 
+  /* Collapse floating panel when returning to the homepage */
+  useEffect(() => {
+    if (pathname === "/" && !conversationActive) {
+      setExpanded(false);
+    }
+  }, [pathname, conversationActive]);
+
   useEffect(() => {
     if (user) {
       clearAnonymousVoiceTurns();
@@ -394,7 +443,7 @@ export function VoiceAgentProvider({ children }: { children: ReactNode }) {
         })
         .catch(() => {
           setTurnsUsed(0);
-          setTurnsLimit(50);
+          setTurnsLimit(SESSION_TURN_LIMIT);
         });
       return;
     }
@@ -415,6 +464,7 @@ export function VoiceAgentProvider({ children }: { children: ReactNode }) {
       isConfigured,
       isAtLimit,
       isAuthenticated,
+      focusedPlanStep,
       textInput,
       setTextInput,
       setExpanded,
@@ -425,7 +475,10 @@ export function VoiceAgentProvider({ children }: { children: ReactNode }) {
       submitText,
       registerPlannerHandlers,
       unregisterPlannerHandlers,
+      registerDashboardHandlers,
+      unregisterDashboardHandlers,
       setPlannerMilestone,
+      setFocusedPlanStep,
       announceMessage,
     }),
     [
@@ -440,6 +493,7 @@ export function VoiceAgentProvider({ children }: { children: ReactNode }) {
       isConfigured,
       isAtLimit,
       isAuthenticated,
+      focusedPlanStep,
       textInput,
       toggleExpanded,
       startConversation,
@@ -448,7 +502,10 @@ export function VoiceAgentProvider({ children }: { children: ReactNode }) {
       submitText,
       registerPlannerHandlers,
       unregisterPlannerHandlers,
+      registerDashboardHandlers,
+      unregisterDashboardHandlers,
       setPlannerMilestone,
+      setFocusedPlanStep,
       announceMessage,
     ],
   );

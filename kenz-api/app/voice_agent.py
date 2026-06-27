@@ -11,11 +11,20 @@ from app.supabase_client import ensure_can_call_llm, increment_llm_calls
 
 VALID_ROUTES = {"/", "/login", "/chat", "/planner"}
 VALID_SCROLL_TARGETS = {"who", "experiences", "how", "map"}
-VALID_MILESTONES = {"destination", "style", "logistics", "review"}
+VALID_MILESTONES = {
+    "destination",
+    "style",
+    "dates",
+    "travellers",
+    "accommodation",
+    "review",
+    "logistics",  # legacy alias — maps to current UI step on the client
+}
 VALID_PLANNER_FIELDS = {
     "destination",
     "travelStyle",
     "duration",
+    "startInDays",
     "travelers",
     "accommodation",
     "transport",
@@ -34,54 +43,68 @@ You MUST respond with JSON only, no markdown, using this exact shape:
 Valid action types:
 - {"type": "scroll", "target": "who"|"experiences"|"how"|"map"}
 - {"type": "navigate", "route": "/"|"/login"|"/chat"|"/planner"}
-- {"type": "planner_go_to", "milestone": "destination"|"style"|"logistics"|"review"}
-- {"type": "planner_set", "field": "destination"|"travelStyle"|"duration"|"travelers"|"accommodation"|"transport", "value": <valid value>}
-- {"type": "planner_complete", "milestone": "destination"|"style"|"logistics"|"review"}
+- {"type": "start_new_trip"}
+- {"type": "planner_go_to", "milestone": "destination"|"style"|"dates"|"travellers"|"accommodation"|"review"}
+- {"type": "planner_set", "field": "destination"|"travelStyle"|"duration"|"startInDays"|"travelers"|"accommodation"|"transport", "value": <valid value>}
+- {"type": "planner_complete", "milestone": "destination"|"style"|"dates"|"travellers"|"accommodation"|"review"}
 - {"type": "noop"}
 
 Site map:
 - Homepage scroll sections: who, experiences, how, map
 - Routes: / (home), /login, /chat (sign-in required), /planner (sign-in required)
-- Planner milestones IN ORDER: destination → style → logistics → review
-  (There is NO timeline step — duration and travelers are set in the logistics step)
+- Build-your-trip checklist IN ORDER (one step at a time): destination → style → dates → travellers → accommodation → review
+- The UI shows option cards ONLY for the current step — always planner_go_to the exact step you are asking about.
 - Field valid values:
   - destination: "dubai", "abu-dhabi", "both"
   - travelStyle: "luxury", "balanced", "budget", "backpacker"
-  - duration: integer 1-60
-  - travelers: integer 1-20
-  - accommodation: "hotel", "airbnb", "hostel", "resort"
-  - transport: "metro", "taxi", "rental", "mixed"
+  - duration: integer nights 1-60 (dates step)
+  - startInDays: integer days from today 1-365 (dates step — when to start)
+  - travelers: integer 1-20 (travellers step)
+  - accommodation: "hotel", "airbnb", "hostel", "resort" (accommodation step only)
+  - transport: "metro", "taxi", "rental", "mixed" (optional; UI auto-fills when accommodation is set)
 
 Rules:
 - If user is NOT authenticated and asks for /chat or /planner, navigate to /login with query {"next": "/planner"}.
 - If already on /planner, use planner actions — do NOT navigate again.
-- ALWAYS extract ALL information the user mentions even if they say it in passing (e.g. "7 day trip to Dubai" → set destination=dubai AND duration=7).
-- If the user's first message mentions trip details (duration, destination, travelers, style) from ANY page, include ALL corresponding planner_set actions along with the navigate action.
+- On /planner, ask about ONE checklist step per turn. Never skip steps — especially travellers.
+- Only planner_set fields that belong to the CURRENT step (see page_context.planner_milestone).
+- If the user mentions info for a LATER step, acknowledge it in "say" but wait to planner_set until that step is active.
 - If unclear, use noop and ask one short clarifying question.
 - Never invent routes, milestones, or enum values outside the lists above.
 
-Planner auto-advance rules (apply whenever on /planner OR when navigating there):
-Milestone order: destination → style → logistics → review
+Trip planning from homepage (pathname "/") or any non-planner page:
+- When the user wants to plan a trip, create a new trip, or mentions Dubai / Abu Dhabi / UAE travel planning, you MUST:
+  1. navigate to /planner (authenticated) OR /login with {"next": "/planner"} (not authenticated)
+  2. {"type": "start_new_trip"}
+  3. If destination is known: planner_set destination, planner_complete destination, planner_go_to style
+- Example — user on homepage says "I want to plan a trip to Dubai":
+  {"say": "Love it — let's plan your Dubai trip! Opening the planner now.", "actions": [
+    {"type": "navigate", "route": "/planner"},
+    {"type": "start_new_trip"},
+    {"type": "planner_set", "field": "destination", "value": "dubai"},
+    {"type": "planner_complete", "milestone": "destination"},
+    {"type": "planner_go_to", "milestone": "style"}
+  ]}
 
-"destination" step:
-  - planner_set destination + planner_complete destination + planner_go_to style
-  - "say": confirm destination, hint at travel style
+Planner auto-advance (on /planner — strict order, never skip):
 
-"style" step:
-  - planner_set travelStyle + planner_complete style + planner_go_to logistics
-  - "say": confirm style, hint at logistics
+"destination": planner_set destination → planner_complete destination → planner_go_to style. Ask travel style next.
 
-"logistics" step (handles duration, travelers, accommodation, transport):
-  - Set ALL fields the user mentions with planner_set actions
-  - Only emit planner_complete logistics + planner_go_to review once BOTH accommodation AND transport are known
-  - If user only gives some fields, set them and ask for the missing ones in "say"
-  - "say": confirm what was set, ask for what's still missing
+"style": planner_set travelStyle → planner_complete style → planner_go_to dates. Ask when they are travelling (trip length + start timing).
 
-"review" step:
-  - Do NOT auto-advance. Confirm plan in "say" and offer to save.
+"dates": planner_set duration and/or startInDays → planner_complete dates → planner_go_to travellers. Do NOT set travelers or accommodation here.
 
-Multi-step: if user gives info for several steps at once, chain ALL planner_set + planner_complete + planner_go_to actions in order.
-Keep "say" warm and specific — always mention what was actually set (e.g. "Seven days in Dubai — perfect!")."""
+"travellers": planner_set travelers → planner_complete travellers → planner_go_to accommodation. Always ask how many people — never skip this step.
+
+"accommodation": planner_set accommodation → planner_complete accommodation → planner_go_to review. Transport is auto-filled by the UI.
+
+"review": confirm the plan in "say". Do NOT auto-advance.
+
+If page_context.planner_milestone is set, that is the active UI step — your "say" and planner_go_to must match it unless you just completed it and advance to the next.
+
+Multi-step from homepage: only planner_set fields for steps you complete in that same action chain (typically destination, maybe style). Defer dates/travellers/accommodation until on /planner.
+
+Keep "say" warm and specific — mention what was set (e.g. "Seven nights — got it! How many travellers?")."""
 
 
 class PageContext(BaseModel):
@@ -100,6 +123,7 @@ class VoiceAction(BaseModel):
     type: Literal[
         "scroll",
         "navigate",
+        "start_new_trip",
         "planner_go_to",
         "planner_set",
         "planner_complete",
@@ -203,7 +227,7 @@ def _sanitize_query(query: Any) -> Optional[dict[str, str]]:
 
 
 def _sanitize_planner_value(field: str, value: Any) -> Optional[Union[str, int]]:
-    if field in {"duration", "travelers"}:
+    if field in {"duration", "travelers", "startInDays"}:
         try:
             num = int(value)
         except (TypeError, ValueError):
@@ -211,6 +235,8 @@ def _sanitize_planner_value(field: str, value: Any) -> Optional[Union[str, int]]
         if field == "duration" and not (1 <= num <= 60):
             return None
         if field == "travelers" and not (1 <= num <= 20):
+            return None
+        if field == "startInDays" and not (1 <= num <= 365):
             return None
         return num
 
@@ -233,6 +259,9 @@ def sanitize_action(raw: dict[str, Any]) -> Optional[VoiceAction]:
     action_type = raw.get("type")
     if action_type == "noop":
         return VoiceAction(type="noop")
+
+    if action_type == "start_new_trip":
+        return VoiceAction(type="start_new_trip")
 
     if action_type == "scroll":
         target = raw.get("target")

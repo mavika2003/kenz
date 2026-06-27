@@ -33,10 +33,10 @@ class Settings(BaseSettings):
         alias="SUPABASE_URL",
     )
     supabase_service_role_key: str = Field(alias="SUPABASE_SERVICE_ROLE_KEY")
-    free_llm_call_limit: int = Field(default=50, alias="FREE_LLM_CALL_LIMIT")
+    free_llm_call_limit: int = Field(default=100, alias="FREE_LLM_CALL_LIMIT")
     chat_history_limit: int = Field(default=80, alias="CHAT_HISTORY_LIMIT")
 
-    voice_session_turn_limit: int = Field(default=50, alias="VOICE_SESSION_TURN_LIMIT")
+    voice_session_turn_limit: int = Field(default=100, alias="VOICE_SESSION_TURN_LIMIT")
     voice_system_prompt: Optional[str] = Field(default=None, alias="VOICE_SYSTEM_PROMPT")
     voice_max_tokens: int = Field(default=600, alias="VOICE_MAX_TOKENS")
 

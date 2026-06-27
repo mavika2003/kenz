@@ -60,6 +60,13 @@ export interface PlanState {
   startDate: Date | null;
   completedMilestones: string[];
   activeMilestoneId?: string | null;
+  /** Google Places photo URLs fetched while building a new trip */
+  placeImages?: {
+    destination?: string;
+    hotel?: string;
+    transfer?: string;
+    highlights?: Record<string, string>;
+  };
 }
 
 export interface DubaiTravelData {

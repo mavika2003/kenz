@@ -20,8 +20,9 @@ export default function VoiceAgentWidget() {
     setExpanded,
   } = useVoiceAgent();
 
-  // Hero renders its own inline panel beside the mic button.
-  if (!isConfigured || isHome) return null;
+  const isPlanner = pathname.startsWith("/planner");
+  // Hero and planner render their own inline Kenzr panels.
+  if (!isConfigured || isHome || isPlanner) return null;
 
   const closePanel = () => {
     stopConversation();

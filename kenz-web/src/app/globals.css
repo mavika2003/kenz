@@ -9,6 +9,17 @@
   --surface: #f7f4ef;
   --paper: #f7f4ef;
   --white: #ffffff;
+
+  /* Dashboard — uses KenZ brand tokens */
+  --dash-bg: var(--canvas);
+  --dash-primary: var(--orange);
+  --dash-primary-dim: var(--orange-deep);
+  --dash-primary-fixed: rgba(255, 106, 0, 0.12);
+  --dash-outline: rgba(20, 18, 16, 0.1);
+  --dash-outline-strong: rgba(20, 18, 16, 0.18);
+  --dash-surface-high: var(--surface);
+  --dash-secondary: rgba(20, 18, 16, 0.5);
+  --dash-on-surface-variant: rgba(20, 18, 16, 0.65);
 }
 
 @theme inline {
@@ -116,6 +127,34 @@ body {
   font-size: 9px;
   color: rgba(20, 18, 16, 0.4);
   background: transparent !important;
+}
+
+/* ── Dashboard ── */
+.dashboard-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.dashboard-scroll::-webkit-scrollbar-thumb {
+  background: #e4e2e2;
+  border-radius: 10px;
+}
+
+.trip-mapbox .mapboxgl-ctrl-attrib {
+  font-size: 9px;
+}
+
+.trip-mapbox .mapboxgl-ctrl-group button {
+  border-radius: 12px !important;
+}
+
+.timeline-track::before {
+  content: "";
+  position: absolute;
+  left: 24px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--dash-outline);
+  z-index: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {
