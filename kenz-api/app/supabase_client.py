@@ -216,7 +216,8 @@ async def save_chat_message(
 
 
 def usage_from_record(record: dict[str, Any], default_limit: int) -> dict[str, int]:
-    limit = int(record.get("llm_call_limit") or default_limit)
+    stored_limit = int(record.get("llm_call_limit") or default_limit)
+    limit = max(stored_limit, default_limit)
     used = int(record.get("llm_calls_used") or 0)
     return {
         "calls_used": used,
@@ -248,7 +249,7 @@ async def increment_llm_calls(settings: Settings, user_id: str) -> dict[str, int
         raise SupabaseError(404, "User not found.")
 
     used = int(record.get("llm_calls_used") or 0) + 1
-    limit = int(record.get("llm_call_limit") or settings.free_llm_call_limit)
+    limit = max(int(record.get("llm_call_limit") or settings.free_llm_call_limit), settings.free_llm_call_limit)
 
     url = f"{settings.supabase_url}/rest/v1/users"
     params = {"id": f"eq.{user_id}"}

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Anton, Plus_Jakarta_Sans } from "next/font/google";
+import { Anton, Plus_Jakarta_Sans, Playfair_Display } from "next/font/google";
 import Providers from "@/components/Providers";
 import "./globals.css";
 
@@ -13,6 +13,16 @@ const anton = Anton({
   variable: "--font-anton",
   weight: "400",
   subsets: ["latin"],
+});
+
+// Substitute for "boitroco" until the font file is placed in /public/fonts.
+// To swap: add @font-face in globals.css pointing to /fonts/boitroco.woff2
+// and change the variable value to your local font family name.
+const boitroco = Playfair_Display({
+  variable: "--font-boitroco",
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  style: ["normal", "italic"],
 });
 
 export const metadata: Metadata = {
@@ -29,7 +39,8 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${jakarta.variable} ${anton.variable} h-full antialiased`}
+      data-scroll-behavior="smooth"
+      className={`${jakarta.variable} ${anton.variable} ${boitroco.variable} h-full antialiased`}
     >
       <body className="min-h-full">
         <Providers>{children}</Providers>

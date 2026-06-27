@@ -20,12 +20,6 @@ export const MILESTONES: Milestone[] = [
     icon: "S",
   },
   {
-    id: "timeline",
-    label: "Timeline",
-    description: "When and how long",
-    icon: "T",
-  },
-  {
     id: "logistics",
     label: "Logistics",
     description: "Stay and transport",

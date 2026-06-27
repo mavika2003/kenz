@@ -1,4 +1,5 @@
 import httpx
+from typing import Dict, List, Optional
 
 from app.config import Settings
 
@@ -12,16 +13,22 @@ class LLMError(Exception):
 
 async def chat_completion(
     settings: Settings,
-    messages: list[dict[str, str]],
+    messages: List[Dict[str, str]],
+    *,
+    max_tokens: Optional[int] = None,
+    temperature: float = 0.8,
+    json_mode: bool = False,
 ) -> str:
-    payload = {
+    payload: dict = {
         "model": settings.llm_model,
         "messages": messages,
-        "max_tokens": settings.max_tokens,
-        "temperature": 0.8,
+        "max_tokens": max_tokens if max_tokens is not None else settings.max_tokens,
+        "temperature": temperature,
         "top_p": 0.95,
         "stream": False,
     }
+    if json_mode:
+        payload["response_format"] = {"type": "json_object"}
 
     headers = {
         "Authorization": f"Bearer {settings.llm_api_key}",

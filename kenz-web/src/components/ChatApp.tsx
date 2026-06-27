@@ -9,6 +9,7 @@ import {
   isChatConfigured,
   sendChat,
 } from "@/lib/chatApi";
+import { HERO_QUERY_KEY } from "./Hero";
 
 const OPENING_MESSAGE =
   "Hey! Flying in soon? Ask me anything about Dubai — neighborhoods, food, scams to avoid, or where locals actually hang out.";
@@ -57,6 +58,12 @@ export default function ChatApp() {
 
   useEffect(() => {
     if (!historyLoading) {
+      // Pick up any query that was typed in the hero chat input.
+      const heroQuery = sessionStorage.getItem(HERO_QUERY_KEY);
+      if (heroQuery) {
+        setInput(heroQuery);
+        sessionStorage.removeItem(HERO_QUERY_KEY);
+      }
       inputRef.current?.focus();
     }
   }, [historyLoading]);

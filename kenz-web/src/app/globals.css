@@ -21,6 +21,7 @@
   --color-paper: var(--paper);
   --font-sans: var(--font-jakarta);
   --font-display: var(--font-anton);
+  --font-boitroco: var(--font-boitroco);
 }
 
 html {

@@ -15,6 +15,14 @@ type CinematicVideoBackgroundProps = {
   onSceneEnded?: () => void;
 };
 
+function applyAudioState(
+  el: HTMLVideoElement,
+  audioOn: boolean,
+) {
+  el.muted = !audioOn;
+  el.volume = audioOn ? 0.65 : 0;
+}
+
 export default function CinematicVideoBackground({
   scenes,
   activeId,
@@ -29,55 +37,40 @@ export default function CinematicVideoBackground({
 
   activeIdRef.current = activeId;
 
-  const syncSound = useCallback(
-    (sceneId: string) => {
-      const el = videoRefs.current[sceneId];
-      if (!el) return;
-      const isActive = sceneId === activeIdRef.current;
-      el.muted = !soundEnabled || !isActive;
-      el.volume = soundEnabled && isActive ? 0.65 : 0;
-    },
-    [soundEnabled]
-  );
-
-  const playScene = useCallback(
-    (sceneId: string, fromStart = true) => {
-      const el = videoRefs.current[sceneId];
-      if (!el) return;
-      if (fromStart) el.currentTime = 0;
-      syncSound(sceneId);
-      void el.play().catch(() => {
-        el.muted = true;
-        void el.play().catch(() => undefined);
-      });
-    },
-    [syncSound]
-  );
+  const playScene = useCallback((sceneId: string, fromStart = true) => {
+    const el = videoRefs.current[sceneId];
+    if (!el) return;
+    if (fromStart) el.currentTime = 0;
+    const audioOn = soundEnabled && sceneId === activeIdRef.current;
+    applyAudioState(el, audioOn);
+    void el.play().catch(() => {
+      applyAudioState(el, false);
+      void el.play().catch(() => undefined);
+    });
+  }, [soundEnabled]);
 
   useEffect(() => {
     scenes.forEach((scene) => {
       const el = videoRefs.current[scene.id];
       if (!el) return;
       const isActive = scene.id === activeId;
-      if (isActive) {
-        playScene(scene.id, true);
-      } else {
-        el.muted = true;
-        el.volume = 0;
+      const audioOn = soundEnabled && isActive;
+      applyAudioState(el, audioOn);
+      if (isActive && el.paused) {
+        void el.play().catch(() => {
+          applyAudioState(el, false);
+          void el.play().catch(() => undefined);
+        });
       }
     });
-  }, [activeId, scenes, playScene]);
-
-  useEffect(() => {
-    scenes.forEach((scene) => syncSound(scene.id));
-  }, [soundEnabled, scenes, syncSound]);
+  }, [activeId, scenes, soundEnabled]);
 
   const handleEnded = useCallback(
     (sceneId: string) => {
       if (sceneId !== activeIdRef.current) return;
       onSceneEnded?.();
     },
-    [onSceneEnded]
+    [onSceneEnded],
   );
 
   return (
@@ -87,6 +80,7 @@ export default function CinematicVideoBackground({
     >
       {scenes.map((scene) => {
         const isActive = scene.id === activeId;
+        const audioOn = soundEnabled && isActive;
 
         return (
           <motion.div
@@ -100,11 +94,6 @@ export default function CinematicVideoBackground({
             }}
             style={{ zIndex: isActive ? 2 : 1 }}
           >
-            <div
-              className="absolute inset-0 bg-cover bg-center"
-              style={{ backgroundImage: `url(${scene.poster})` }}
-            />
-
             <motion.div
               className="absolute inset-0"
               initial={false}
@@ -127,16 +116,26 @@ export default function CinematicVideoBackground({
               <video
                 ref={(el) => {
                   videoRefs.current[scene.id] = el;
+                  // React does not render the `muted` prop as an HTML attribute,
+                  // so browsers block autoplay. Set it imperatively on the element
+                  // the moment the ref is assigned so autoplay works on page load.
+                  if (el) el.muted = true;
                 }}
                 autoPlay
-                muted
                 playsInline
                 preload="auto"
-                poster={scene.poster}
-                onLoadedData={(e) => {
-                  if (scene.id === activeIdRef.current) {
-                    playScene(scene.id, false);
-                  }
+                onCanPlay={(e) => {
+                  if (scene.id !== activeIdRef.current) return;
+                  const el = e.currentTarget;
+                  const on = soundEnabled && scene.id === activeIdRef.current;
+                  applyAudioState(el, on);
+                  void el.play().catch(() => {
+                    applyAudioState(el, false);
+                    void el.play().catch(() => undefined);
+                  });
+                }}
+                onPlay={(e) => {
+                  applyAudioState(e.currentTarget, audioOn);
                 }}
                 onEnded={() => handleEnded(scene.id)}
                 onError={(e) => {

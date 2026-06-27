@@ -18,7 +18,7 @@ export const CINEMATIC_SCENES: CinematicScene[] = [
     label: "Urban skyline",
     headline: "Explore Dubai",
     subline: "Where ambition meets the Gulf",
-    localSrc: "/videos/hero-urban.mp4",
+    localSrc: "/videos/dubai-main.mp4",
     fallbackSrc:
       "https://assets.mixkit.co/videos/preview/mixkit-aerial-panorama-of-dubai-city-4695-large.mp4",
     poster: "/videos/hero-urban-poster.png",
@@ -31,7 +31,7 @@ export const CINEMATIC_SCENES: CinematicScene[] = [
     label: "Cultural depth",
     headline: "The local soul",
     subline: "Coffee, souks, and living tradition",
-    localSrc: "/videos/hero-culture.mp4",
+    localSrc: "/videos/marina.mp4",
     fallbackSrc:
       "https://assets.mixkit.co/videos/preview/mixkit-pouring-coffee-in-a-cup-482-large.mp4",
     poster: "/videos/hero-culture-poster.png",
@@ -44,7 +44,7 @@ export const CINEMATIC_SCENES: CinematicScene[] = [
     label: "Desert dawn",
     headline: "Beyond the skyline",
     subline: "Dunes, silence, and early light",
-    localSrc: "/videos/hero-desert.mp4",
+    localSrc: "/videos/burj-al-arab.mp4",
     fallbackSrc:
       "https://assets.mixkit.co/videos/preview/mixkit-aerial-view-of-sand-dunes-in-the-desert-32812-large.mp4",
     poster: "/videos/hero-desert-poster.png",

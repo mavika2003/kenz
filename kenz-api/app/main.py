@@ -1,7 +1,7 @@
 import httpx
 from typing import Optional
 
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
@@ -26,6 +26,15 @@ from app.config import (
     get_settings,
 )
 from app.llm_client import LLMError, chat_completion
+from app.voice_agent import (
+    PageContext,
+    VoiceAgentRequest,
+    VoiceAgentResponse,
+    VoiceSessionLimitError,
+    process_voice_turn,
+)
+from app.voice_sessions import get_turns_used
+from app.whisper_client import transcribe_audio
 from app.passwords import hash_password, verify_password
 from app.supabase_client import (
     SupabaseError,
@@ -79,6 +88,19 @@ def require_user_id(user: dict) -> str:
     if not user_id:
         raise HTTPException(status_code=401, detail="Sign in to continue.")
     return user_id
+
+
+def get_optional_user_id(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme),
+) -> Optional[str]:
+    if credentials is None or credentials.scheme.lower() != "bearer":
+        return None
+    try:
+        payload = decode_access_token(credentials.credentials, settings)
+        user = user_from_payload(payload)
+    except AuthError:
+        return None
+    return user.get("id")
 
 
 def build_auth_response(record: dict) -> AuthResponse:
@@ -270,6 +292,95 @@ async def get_trip_plan(
         "budget_breakdown": record.get("budget_breakdown") or {},
         "budget_total": record.get("budget_total"),
     }
+
+
+@app.post("/voice/agent", response_model=VoiceAgentResponse)
+async def voice_agent(
+    request: VoiceAgentRequest,
+    user_id: Optional[str] = Depends(get_optional_user_id),
+) -> VoiceAgentResponse:
+    try:
+        return await process_voice_turn(
+            settings,
+            request.session_id.strip(),
+            request.transcript,
+            request.page_context,
+            user_id=user_id,
+        )
+    except VoiceSessionLimitError:
+        raise HTTPException(
+            status_code=429,
+            detail="Voice session limit reached. Sign up for unlimited chat!",
+        ) from None
+    except SupabaseError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=exc.detail) from exc
+    except LLMError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=exc.detail) from exc
+    except httpx.HTTPError as exc:
+        raise HTTPException(
+            status_code=502,
+            detail="Could not reach the LLM provider. Check LLM_API_URL and your API key.",
+        ) from exc
+
+
+@app.post("/voice/agent/audio", response_model=VoiceAgentResponse)
+async def voice_agent_audio(
+    audio: UploadFile = File(...),
+    session_id: str = Form(...),
+    page_context: str = Form(...),
+    user_id: Optional[str] = Depends(get_optional_user_id),
+) -> VoiceAgentResponse:
+    session_id = session_id.strip()
+    anon_limit = settings.voice_session_turn_limit
+
+    if user_id:
+        try:
+            await ensure_can_call_llm(settings, user_id)
+        except SupabaseError as exc:
+            raise HTTPException(status_code=exc.status_code, detail=exc.detail) from exc
+    elif get_turns_used(session_id) >= anon_limit:
+        raise HTTPException(
+            status_code=429,
+            detail="Voice session limit reached. Sign up for unlimited chat!",
+        )
+
+    try:
+        page = PageContext.model_validate_json(page_context)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail="Invalid page context.") from exc
+
+    audio_bytes = await audio.read()
+    content_type = audio.content_type or "audio/webm"
+    filename = audio.filename or "recording.webm"
+
+    try:
+        transcript = await transcribe_audio(
+            settings,
+            audio_bytes,
+            filename=filename,
+            content_type=content_type,
+        )
+        return await process_voice_turn(
+            settings,
+            session_id,
+            transcript,
+            page,
+            user_id=user_id,
+        )
+    except VoiceSessionLimitError:
+        raise HTTPException(
+            status_code=429,
+            detail="Voice session limit reached. Sign up for unlimited chat!",
+        ) from None
+    except SupabaseError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=exc.detail) from exc
+    except LLMError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=exc.detail) from exc
+    except httpx.HTTPError as exc:
+        raise HTTPException(
+            status_code=502,
+            detail="Could not reach the speech or LLM provider. Check your API key.",
+        ) from exc
 
 
 @app.post("/chat", response_model=ChatResponse)

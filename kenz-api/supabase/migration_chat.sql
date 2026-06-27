@@ -4,7 +4,7 @@
 -- Usage limits for free tier
 alter table public.users
   add column if not exists llm_calls_used integer not null default 0,
-  add column if not exists llm_call_limit integer not null default 25;
+  add column if not exists llm_call_limit integer not null default 50;
 
 -- Persist chat history per user
 create table if not exists public.chat_messages (

@@ -11,7 +11,7 @@ create table if not exists public.users (
   created_at timestamptz not null default now(),
   last_login_at timestamptz not null default now(),
   llm_calls_used integer not null default 0,
-  llm_call_limit integer not null default 25
+  llm_call_limit integer not null default 50
 );
 
 create index if not exists users_email_idx on public.users (email);

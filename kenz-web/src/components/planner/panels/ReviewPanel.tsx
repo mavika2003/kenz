@@ -7,7 +7,7 @@ import {
   DESTINATION_DATA,
   ACCOMMODATION_DATA,
 } from "@/lib/planner/data";
-import FlowDiagram from "../FlowDiagram";
+import ItineraryTimeline from "./ItineraryTimeline";
 import PlannerBezel from "../ui/PlannerBezel";
 import PlannerButton from "../ui/PlannerButton";
 
@@ -46,12 +46,8 @@ export default function ReviewPanel({
         </p>
       </div>
 
-      <PlannerBezel innerClassName="p-6">
-        <p className="text-xs font-semibold uppercase tracking-wider text-ink/45">Trip flow</p>
-        <div className="mt-4 h-[280px]">
-          <FlowDiagram planState={planState} />
-        </div>
-      </PlannerBezel>
+      {/* Layla-style day-by-day itinerary timeline */}
+      <ItineraryTimeline planState={planState} />
 
       <div className="grid gap-4 md:grid-cols-3">
         <PlannerBezel innerClassName="p-5">

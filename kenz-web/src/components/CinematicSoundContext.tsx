@@ -21,7 +21,7 @@ const CinematicSoundContext = createContext<CinematicSoundContextValue | null>(n
 const STORAGE_KEY = "kenz-cinematic-sound";
 
 export function CinematicSoundProvider({ children }: { children: ReactNode }) {
-  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [soundEnabled, setSoundEnabled] = useState(false);
 
   const persist = useCallback((enabled: boolean) => {
     try {
@@ -34,7 +34,8 @@ export function CinematicSoundProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     try {
       const stored = sessionStorage.getItem(STORAGE_KEY);
-      if (stored === "0") setSoundEnabled(false);
+      if (stored === "1") setSoundEnabled(true);
+      else if (stored === "0") setSoundEnabled(false);
     } catch {
       /* ignore */
     }

@@ -2,9 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import Roadmap from "@/components/planner/Roadmap";
 import Canvas from "@/components/planner/Canvas";
-import ContextualFeed from "@/components/planner/ContextualFeed";
+import PlannerChatPanel from "@/components/planner/PlannerChatPanel";
 import PlannerNav from "@/components/planner/PlannerNav";
 import PlannerBezel from "@/components/planner/ui/PlannerBezel";
 import { PlanState, Milestone } from "@/lib/planner/types";
@@ -18,6 +17,7 @@ import {
   saveTripPlan,
 } from "@/lib/plannerApi";
 import { easePremium } from "@/components/planner/ui/theme";
+import PlannerVoiceBridge from "@/components/voice/PlannerVoiceBridge";
 
 type ExportStatus = {
   message: string;
@@ -210,6 +210,12 @@ export default function PlannerApp() {
 
   return (
     <div className="flex min-h-[100dvh] flex-col bg-canvas font-sans text-ink">
+      <PlannerVoiceBridge
+        activeMilestone={activeMilestone}
+        setActiveMilestone={setActiveMilestone}
+        updatePlan={updatePlan}
+        markMilestoneComplete={markMilestoneComplete}
+      />
       <PlannerNav />
 
       {exportStatus && (
@@ -227,31 +233,19 @@ export default function PlannerApp() {
       )}
 
       <div className="flex min-h-0 flex-1 flex-col gap-4 p-4 lg:flex-row lg:gap-5 lg:p-6">
-        <motion.aside
-          initial={{ opacity: 0, x: -16 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, ease: easePremium }}
-          className="w-full shrink-0 lg:w-[260px] xl:w-[280px]"
-        >
-          <PlannerBezel innerClassName="h-full min-h-[220px] lg:min-h-0">
-            <Roadmap
-              milestones={MILESTONES}
-              activeMilestone={activeMilestone}
-              completedMilestones={planState.completedMilestones}
-              onSelect={setActiveMilestone}
-            />
-          </PlannerBezel>
-        </motion.aside>
-
+        {/* Planner canvas — takes up ~60% */}
         <motion.main
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.08, ease: easePremium }}
+          transition={{ duration: 0.6, ease: easePremium }}
           className="flex min-h-0 min-w-0 flex-1 flex-col"
         >
           <PlannerBezel className="h-full" innerClassName="flex h-full min-h-[480px] flex-col">
             <Canvas
               activeMilestone={activeMilestone}
+              milestones={MILESTONES}
+              completedMilestones={planState.completedMilestones}
+              onSelectMilestone={setActiveMilestone}
               planState={planState}
               updatePlan={updatePlan}
               onComplete={activeMilestone.id === "review" ? handleExportPlan : handleContinue}
@@ -263,14 +257,15 @@ export default function PlannerApp() {
           </PlannerBezel>
         </motion.main>
 
+        {/* Chat panel — ~40% */}
         <motion.aside
           initial={{ opacity: 0, x: 16 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, delay: 0.12, ease: easePremium }}
-          className="w-full shrink-0 xl:w-[320px]"
+          transition={{ duration: 0.6, delay: 0.08, ease: easePremium }}
+          className="w-full shrink-0 lg:w-[38%] xl:w-[420px]"
         >
-          <PlannerBezel innerClassName="h-full min-h-[280px] xl:min-h-0">
-            <ContextualFeed planState={planState} />
+          <PlannerBezel innerClassName="h-full min-h-[420px] lg:min-h-0 !p-0 overflow-hidden">
+            <PlannerChatPanel />
           </PlannerBezel>
         </motion.aside>
       </div>
