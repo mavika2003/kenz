@@ -140,9 +140,12 @@ export default function CinematicVideoBackground({
                 onEnded={() => handleEnded(scene.id)}
                 onError={(e) => {
                   const el = e.currentTarget;
-                  if (el.src !== scene.fallbackSrc) {
-                    el.src = scene.fallbackSrc;
-                  }
+                  if (el.dataset.fallbackTried === "1") return;
+                  el.dataset.fallbackTried = "1";
+                  while (el.firstChild) el.removeChild(el.firstChild);
+                  el.src = scene.fallbackSrc;
+                  void el.load();
+                  void el.play().catch(() => undefined);
                 }}
                 className="absolute inset-0 h-full w-full object-cover"
               >
