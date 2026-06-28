@@ -9,23 +9,24 @@ type KenzLogoProps = {
 };
 
 export default function KenzLogo({ href = "/", className = "", size = 34 }: KenzLogoProps) {
+  const markSize = Math.round(size * 0.75);
   const mark = (
-    <span className={`inline-flex items-center gap-1 ${className}`}>
+    <span className={`inline-flex items-center gap-0.5 ${className}`}>
       <span
         className="relative shrink-0"
-        style={{ width: size, height: size }}
+        style={{ width: markSize, height: markSize }}
       >
         <Image
           src="/brand/kenz-mark.png"
           alt=""
           fill
           className="object-contain"
-          sizes={`${size}px`}
+          sizes={`${markSize}px`}
           priority
         />
       </span>
       <span
-        className="font-[family-name:var(--font-jakarta)] text-[1.15rem] font-bold leading-none tracking-[-0.02em] text-orange lowercase sm:text-[1.25rem]"
+        className="-ml-0.5 font-[family-name:var(--font-jakarta)] text-[1.15rem] font-bold leading-none tracking-[-0.02em] text-orange lowercase sm:text-[1.25rem]"
         aria-hidden="true"
       >
         enz
