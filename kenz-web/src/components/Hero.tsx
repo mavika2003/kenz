@@ -3,7 +3,6 @@
 import {
   AnimatePresence,
   motion,
-  useReducedMotion,
   useScroll,
   useTransform,
 } from "framer-motion";
@@ -17,7 +16,7 @@ import { useRouter } from "next/navigation";
 import { ArrowRight, Microphone } from "@phosphor-icons/react";
 import { CINEMATIC_SCENES } from "@/data/cinematic-scenes";
 import CinematicVideoBackground from "./ui/CinematicVideoBackground";
-import { easePremium } from "@/lib/motion";
+import { easePremium, useHydratedReducedMotion } from "@/lib/motion";
 import { useAuth } from "./AuthProvider";
 import { loginPageUrl } from "@/lib/auth";
 import { useVoiceAgent } from "./voice/VoiceAgentContext";
@@ -43,7 +42,7 @@ const SUGGESTIONS: Suggestion[] = [
 export default function Hero() {
   const ref = useRef<HTMLElement>(null);
   const micVideoRef = useRef<HTMLVideoElement>(null);
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useHydratedReducedMotion();
   const [sceneIndex, setSceneIndex] = useState(0);
   const [query, setQuery] = useState("");
   const [focused, setFocused] = useState(false);

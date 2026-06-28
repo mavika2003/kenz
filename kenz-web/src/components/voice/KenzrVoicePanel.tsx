@@ -1,9 +1,9 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import { Microphone } from "@phosphor-icons/react";
 import { useEffect, useRef } from "react";
-import { easePremium } from "@/lib/motion";
+import { easePremium, useHydratedReducedMotion } from "@/lib/motion";
 
 export function GradientCircle({
   size = "lg",
@@ -96,7 +96,7 @@ export default function KenzrVoicePanel({
   className = "",
   onClose,
 }: KenzrVoicePanelProps) {
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useHydratedReducedMotion();
   const isHero = variant === "hero";
 
   const glassClass = compact
@@ -115,7 +115,7 @@ export default function KenzrVoicePanel({
       animate={{ opacity: 1, x: 0, y: 0, scale: 1 }}
       exit={reduceMotion ? undefined : { opacity: 0, x: isHero ? 8 : 0, y: isHero ? 0 : 6, scale: 0.97 }}
       transition={{ duration: 0.35, ease: easePremium }}
-      className={`relative flex flex-col items-center ${compact ? "w-[9.5rem]" : ""} ${glassClass} ${className}`}
+      className={`flex flex-col items-center ${compact ? "w-[9.5rem]" : ""} ${glassClass} ${className}`}
     >
       {onClose && (
         <button

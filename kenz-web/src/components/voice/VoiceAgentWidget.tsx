@@ -1,13 +1,14 @@
 "use client";
 
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+import { useHydratedReducedMotion } from "@/lib/motion";
 import { usePathname } from "next/navigation";
 import { useVoiceAgent } from "./VoiceAgentContext";
 import KenzrVoicePanel, { GradientCircle } from "./KenzrVoicePanel";
 
 export default function VoiceAgentWidget() {
   const pathname = usePathname() ?? "/";
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useHydratedReducedMotion();
   const isHome = pathname === "/";
 
   const {
@@ -43,6 +44,7 @@ export default function VoiceAgentWidget() {
               conversationActive={conversationActive}
               status={status}
               onClose={closePanel}
+              className="relative"
             />
           )}
         </AnimatePresence>

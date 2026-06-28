@@ -1,8 +1,8 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import type { ReactNode } from "react";
-import { easePremium } from "@/lib/motion";
+import { easePremium, useHydratedReducedMotion } from "@/lib/motion";
 
 type MotionRevealProps = {
   children: ReactNode;
@@ -15,7 +15,7 @@ export default function MotionReveal({
   className = "",
   delay = 0,
 }: MotionRevealProps) {
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useHydratedReducedMotion();
 
   if (reduceMotion) {
     return <div className={className}>{children}</div>;

@@ -1,15 +1,15 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { CINEMATIC_SCENES } from "@/data/cinematic-scenes";
 import { sceneVideoSrc } from "@/data/cinematic-scenes";
 import MotionReveal from "./MotionReveal";
 import BezelCard from "./ui/BezelCard";
-import { easePremium } from "@/lib/motion";
+import { easePremium, useHydratedReducedMotion } from "@/lib/motion";
 
 export default function CinematicMoments() {
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useHydratedReducedMotion();
   const videoRefs = useRef<Record<string, HTMLVideoElement | null>>({});
   const indexRef = useRef(0);
   const [index, setIndex] = useState(0);

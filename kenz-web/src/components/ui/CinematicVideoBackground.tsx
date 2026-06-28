@@ -1,10 +1,10 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { CinematicScene } from "@/data/cinematic-scenes";
 import { sceneVideoSrc } from "@/data/cinematic-scenes";
-import { easePremium } from "@/lib/motion";
+import { easePremium, useHydratedReducedMotion } from "@/lib/motion";
 
 type CinematicVideoBackgroundProps = {
   scenes: CinematicScene[];
@@ -21,7 +21,7 @@ export default function CinematicVideoBackground({
   kenBurns = true,
   onSceneEnded,
 }: CinematicVideoBackgroundProps) {
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useHydratedReducedMotion();
   const videoRefs = useRef<Record<string, HTMLVideoElement | null>>({});
   const activeIdRef = useRef(activeId);
   const [readyScenes, setReadyScenes] = useState<Record<string, boolean>>({});

@@ -1,6 +1,7 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
+import { useHydratedReducedMotion } from "@/lib/motion";
 import { useEffect, useState } from "react";
 import type { VoiceAgentStatus } from "@/lib/voice/types";
 
@@ -15,7 +16,7 @@ export default function VoiceAgentAvatar({
   size = 56,
   className = "",
 }: VoiceAgentAvatarProps) {
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useHydratedReducedMotion();
   const [blink, setBlink] = useState(false);
   const [mouthOpen, setMouthOpen] = useState(false);
 
