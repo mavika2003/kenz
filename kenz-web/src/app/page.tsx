@@ -1,7 +1,6 @@
 import Nav from "@/components/Nav";
 import Hero from "@/components/Hero";
 import CinematicMoments from "@/components/CinematicMoments";
-import WhoSection from "@/components/WhoSection";
 import ExperiencesBento from "@/components/ExperiencesBento";
 import HowItWorks from "@/components/HowItWorks";
 import NeighborhoodsSection from "@/components/NeighborhoodsSection";
@@ -14,7 +13,6 @@ export default function Home() {
       <Nav overlay />
       <main className="overflow-x-hidden">
         <Hero />
-        <WhoSection />
         <CinematicMoments />
         <ExperiencesBento />
         <HowItWorks />

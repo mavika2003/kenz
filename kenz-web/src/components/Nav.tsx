@@ -10,7 +10,6 @@ import { loginPageUrl } from "@/lib/auth";
 import { easePremium } from "@/lib/motion";
 
 const links = [
-  { href: "/#who", label: "Who we are" },
   { href: "/#experiences", label: "Experiences" },
   { href: "/#map", label: "Neighborhoods" },
 ];
