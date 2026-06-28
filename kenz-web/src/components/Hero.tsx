@@ -36,7 +36,7 @@ type Suggestion =
 const SUGGESTIONS: Suggestion[] = [
   { label: "Create a new trip", kind: "planner" },
   { label: "Inspire me where to go", kind: "chat", prompt: "Inspire me on where to go in Dubai" },
-  { label: "Plan a road trip", kind: "chat", prompt: "Plan a road trip around the UAE" },
+  { label: "Explore hidden gems", kind: "chat", prompt: "Show me the hidden gems of Dubai" },
 ];
 
 export default function Hero() {
@@ -211,6 +211,8 @@ export default function Hero() {
             transition={{ duration: 0.65, delay: 0.13, ease: easePremium }}
             className="mt-3 flex w-full items-center gap-3 overflow-visible"
           >
+            {/* Invisible spacer mirrors the mic so the chat input stays centered */}
+            {isConfigured && <div className="hidden h-14 w-14 shrink-0 md:block" aria-hidden />}
             <motion.div
               animate={
                 chatboxHighlighted && !reduceMotion
