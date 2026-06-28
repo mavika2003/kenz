@@ -234,7 +234,10 @@ export default function Hero() {
             >
               {/* Left brand dot */}
               <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-orange shadow-sm">
-                <ArrowRight size={14} weight="bold" className="rotate-[-45deg] text-white" />
+                {/* Single sharp-edged four-pointed star */}
+                <svg viewBox="0 0 100 100" fill="currentColor" aria-hidden className="h-[17px] w-[17px] text-white">
+                  <path d="M50 2 L60.6 39.4 L98 50 L60.6 60.6 L50 98 L39.4 60.6 L2 50 L39.4 39.4 Z" />
+                </svg>
               </div>
 
               <input
