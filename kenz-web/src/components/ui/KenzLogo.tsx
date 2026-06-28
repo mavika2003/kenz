@@ -17,7 +17,7 @@ export default function KenzLogo({ href = "/", className = "", size = 34 }: Kenz
         style={{ width: markSize, height: markSize }}
       >
         <Image
-          src="/brand/kenz-mark.png"
+          src="/brand/kenz-mark-v2.png"
           alt=""
           fill
           className="object-contain"
