@@ -49,6 +49,13 @@ class Settings(BaseSettings):
         alias="WHISPER_MODEL",
     )
 
+    # LiteAPI (hotel content + live rates). Key stays server-side.
+    liteapi_key: str = Field(default="", alias="LITEAPI_KEY")
+    liteapi_base: str = Field(
+        default="https://api.liteapi.travel/v3.0",
+        alias="LITEAPI_BASE",
+    )
+
     @property
     def origin_list(self) -> list[str]:
         return [origin.strip() for origin in self.allowed_origins.split(",") if origin.strip()]

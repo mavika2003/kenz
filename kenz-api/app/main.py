@@ -35,6 +35,9 @@ from app.voice_agent import (
 )
 from app.voice_sessions import get_turns_used
 from app.whisper_client import transcribe_audio
+from app.hotels import search_hotels
+from app.itinerary import generate_itinerary
+from pydantic import BaseModel
 from app.passwords import hash_password, verify_password
 from app.supabase_client import (
     SupabaseError,
@@ -115,6 +118,69 @@ def build_auth_response(record: dict) -> AuthResponse:
 @app.get("/health")
 async def health() -> dict[str, str]:
     return {"status": "ok", "model": settings.llm_model}
+
+
+@app.get("/hotels/search")
+async def hotels_search(
+    city: str,
+    country: str,
+    checkin: str,
+    checkout: str,
+    adults: int = 2,
+    currency: str = "USD",
+) -> dict:
+    if not settings.liteapi_key:
+        raise HTTPException(
+            status_code=503,
+            detail="Hotel search is not configured (LITEAPI_KEY missing).",
+        )
+    try:
+        hotels = await search_hotels(
+            settings,
+            city=city,
+            country=country,
+            checkin=checkin,
+            checkout=checkout,
+            adults=adults,
+            currency=currency,
+        )
+    except httpx.HTTPStatusError as exc:
+        detail = "Hotel provider rejected the request."
+        try:
+            detail = exc.response.json().get("error", {}).get("description", detail)
+        except Exception:
+            pass
+        raise HTTPException(status_code=502, detail=detail) from exc
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=502, detail="Could not reach the hotel provider.") from exc
+    return {"hotels": hotels}
+
+
+class ItineraryRequest(BaseModel):
+    destination: str = "Dubai"
+    days: int = 5
+    travelers: int = 2
+    budget: str = ""
+    interests: str = ""
+    origin: str = ""
+
+
+@app.post("/itinerary/generate")
+async def itinerary_generate(req: ItineraryRequest) -> dict:
+    try:
+        return await generate_itinerary(
+            settings,
+            destination=req.destination,
+            days=req.days,
+            travelers=req.travelers,
+            budget=req.budget,
+            interests=req.interests,
+            origin=req.origin,
+        )
+    except LLMError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=exc.detail) from exc
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=502, detail="Could not reach the AI provider.") from exc
 
 
 @app.post("/auth/register", response_model=AuthResponse)

@@ -10,19 +10,23 @@ services:
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     envVars:
+      # OpenRouter (set the key in the dashboard — never commit it)
       - key: LLM_API_KEY
         sync: false
       - key: LLM_API_URL
-        value: https://api.groq.com/openai/v1/chat/completions
+        value: https://openrouter.ai/api/v1/chat/completions
       - key: LLM_MODEL
-        value: llama-3.3-70b-versatile
+        value: meta-llama/llama-3.3-70b-instruct
       - key: ALLOWED_ORIGINS
         value: http://localhost:3000,https://gokenz.com,https://www.gokenz.com
-      - key: GOOGLE_CLIENT_ID
-        sync: false
       - key: JWT_SECRET
-        sync: false
+        generateValue: true
       - key: SUPABASE_URL
         value: https://zynadcpqsmxulhkcwzrl.supabase.co
       - key: SUPABASE_SERVICE_ROLE_KEY
         sync: false
+      # LiteAPI (real hotels + rates) — set the key in the dashboard
+      - key: LITEAPI_KEY
+        sync: false
+      - key: LITEAPI_BASE
+        value: https://api.liteapi.travel/v3.0
