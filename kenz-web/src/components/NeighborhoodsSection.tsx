@@ -1,6 +1,6 @@
 import DubaiMap from "./DubaiMap";
 import { ProtectedChatButton } from "./ProtectedChatLink";
-import { mustSeeItems } from "@/data/experiences";
+import { foodFindMustSee } from "@/data/foodfinds";
 import MotionReveal from "./MotionReveal";
 import BezelCard from "./ui/BezelCard";
 
@@ -16,13 +16,13 @@ export default function NeighborhoodsSection() {
               worth your time
             </h2>
             <p className="mt-5 max-w-md text-lg text-[#141210]/60">
-              Tap a pin to see local tips. This is where residents actually go,
-              not where brochures send you.
+              Hover a pin to see reels from @foodfindsuae — real spots locals are
+              posting about right now.
             </p>
           </MotionReveal>
 
           <MotionReveal delay={0.1} className="mt-10">
-            <BezelCard innerClassName="overflow-hidden p-2">
+            <BezelCard innerClassName="p-2">
               <DubaiMap />
             </BezelCard>
           </MotionReveal>
@@ -32,10 +32,10 @@ export default function NeighborhoodsSection() {
           <MotionReveal delay={0.12}>
             <BezelCard innerClassName="p-8">
               <h3 className="font-[family-name:var(--font-anton)] text-lg uppercase text-[#141210]">
-                Must see
+                From @foodfindsuae
               </h3>
               <ul className="mt-5 space-y-3">
-                {mustSeeItems.map((item) => (
+                {foodFindMustSee.slice(0, 6).map((item) => (
                   <li key={item} className="text-sm text-[#141210]/75">
                     {item}
                   </li>

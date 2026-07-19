@@ -95,10 +95,71 @@ body {
 
 .dubai-map-marker:hover,
 .dubai-map-marker.is-active {
-  transform: scale(1.08);
+  transform: scale(1.18);
   background: var(--orange);
   color: #fff;
   border-color: var(--orange);
+  z-index: 20;
+}
+
+.dubai-map-reel-popup-wrap {
+  position: absolute;
+  z-index: 1000;
+  inset: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.dubai-map-reel-popup {
+  display: block;
+  max-height: 100%;
+  pointer-events: auto;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  box-shadow:
+    0 24px 64px rgba(20, 18, 16, 0.28),
+    0 0 0 1px rgba(20, 18, 16, 0.08);
+  animation: dubai-map-popup-in 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.dubai-map-reel-popup:hover {
+  transform: scale(1.02);
+  box-shadow:
+    0 28px 72px rgba(20, 18, 16, 0.32),
+    0 0 0 1px rgba(255, 106, 0, 0.35);
+}
+
+.dubai-map-reel-popup__video {
+  display: block;
+  height: auto;
+  width: auto;
+  max-height: 82cqh;
+  max-width: min(200px, 38cqw);
+  aspect-ratio: 9 / 16;
+  object-fit: cover;
+  background: #141210;
+  border-radius: 18px;
+}
+
+@keyframes dubai-map-popup-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (min-width: 640px) {
+  .dubai-map-reel-popup__video {
+    max-width: min(210px, 36cqw);
+  }
 }
 
 .dubai-map-popup-wrap .leaflet-popup-content-wrapper {
