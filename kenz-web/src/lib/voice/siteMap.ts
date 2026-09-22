@@ -1,7 +1,7 @@
 export const VOICE_ROUTES = ["/", "/login", "/chat", "/planner"] as const;
 export type VoiceRoute = (typeof VOICE_ROUTES)[number];
 
-export const VOICE_SECTIONS = ["who", "experiences", "how", "map"] as const;
+export const VOICE_SECTIONS = ["whats-on", "itineraries", "dubai-101"] as const;
 export type VoiceSection = (typeof VOICE_SECTIONS)[number];
 
 export const VOICE_MILESTONES = [
@@ -14,10 +14,9 @@ export const VOICE_MILESTONES = [
 export type VoiceMilestone = (typeof VOICE_MILESTONES)[number];
 
 export const SECTION_LABELS: Record<VoiceSection, string> = {
-  who: "Who we are",
-  experiences: "Experiences",
-  how: "How KenZ works",
-  map: "Neighborhoods",
+  "whats-on": "What's On",
+  itineraries: "Itineraries",
+  "dubai-101": "Dubai 101",
 };
 
 export const SESSION_ID_KEY = "kenz_voice_session_id";

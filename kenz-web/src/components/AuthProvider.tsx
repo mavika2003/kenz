@@ -41,20 +41,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const stored = getStoredUser();
 
     if (!token || !stored) {
-      setLoading(false);
-      return;
+      const id = window.setTimeout(() => setLoading(false), 0);
+      return () => window.clearTimeout(id);
     }
 
-    setUser(stored);
-    void fetchCurrentUser(token).then((fresh) => {
-      if (fresh) {
-        setUser(fresh);
-      } else {
-        clearAuth();
-        setUser(null);
-      }
-      setLoading(false);
-    });
+    void fetchCurrentUser(token)
+      .then((fresh) => {
+        if (fresh === "invalid") {
+          clearAuth();
+          setUser(null);
+        } else if (fresh === "offline") {
+          setUser(stored);
+        } else {
+          setUser(fresh);
+        }
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, []);
 
   const requireAuth = useCallback(

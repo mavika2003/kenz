@@ -100,15 +100,22 @@ export async function loginWithEmail(input: {
   return parseAuthResponse(response, "Invalid email/username or password.");
 }
 
-export async function fetchCurrentUser(token: string): Promise<AuthUser | null> {
-  if (!API_URL) return null;
+export async function fetchCurrentUser(
+  token: string,
+): Promise<AuthUser | "invalid" | "offline"> {
+  if (!API_URL) return "offline";
 
-  const response = await fetch(`${API_URL.replace(/\/$/, "")}/auth/me`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  try {
+    const response = await fetch(`${API_URL.replace(/\/$/, "")}/auth/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
-  if (!response.ok) return null;
-  return (await response.json()) as AuthUser;
+    if (response.status === 401 || response.status === 403) return "invalid";
+    if (!response.ok) return "offline";
+    return (await response.json()) as AuthUser;
+  } catch {
+    return "offline";
+  }
 }
 
 export function loginPageUrl(mode: AuthMode = "login", next = "/chat"): string {

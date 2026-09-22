@@ -4,14 +4,14 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { useAuth } from "./AuthProvider";
-import { ProtectedPlannerLink } from "./ProtectedPlannerLink";
 import KenzLogo from "./ui/KenzLogo";
 import { loginPageUrl } from "@/lib/auth";
 import { easePremium } from "@/lib/motion";
 
 const links = [
-  { href: "/#experiences", label: "Experiences" },
-  { href: "/#map", label: "Neighborhoods" },
+  { href: "/#whats-on", label: "What's On" },
+  { href: "/#itineraries", label: "Itineraries" },
+  { href: "/#dubai-101", label: "Dubai 101" },
 ];
 
 type NavProps = {
@@ -73,13 +73,6 @@ export default function Nav({ overlay = false }: NavProps) {
                 {link.label}
               </Link>
             ))}
-            <ProtectedPlannerLink
-              className={`text-sm font-medium transition-colors duration-300 ${
-                isDarkShell ? "text-white/80 hover:text-white" : "text-black/65 hover:text-orange"
-              }`}
-            >
-              Plan trip
-            </ProtectedPlannerLink>
           </div>
 
           <div className="hidden items-center gap-2 md:flex">
@@ -141,7 +134,7 @@ export default function Nav({ overlay = false }: NavProps) {
             className="fixed inset-0 z-50 bg-[#141210]/90 backdrop-blur-3xl md:hidden"
           >
             <div className="flex h-full flex-col justify-center px-8">
-              {[...links, { href: "/planner", label: "Plan trip" }, { href: "/chat", label: "Chat" }].map(
+              {[...links, { href: "/chat", label: "Chat" }].map(
                 (link, i) => (
                   <motion.div
                     key={link.href}

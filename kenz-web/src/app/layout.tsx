@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Anton, Hanken_Grotesk, JetBrains_Mono, Plus_Jakarta_Sans, Playfair_Display } from "next/font/google";
+import { Anton, Caveat, Hanken_Grotesk, JetBrains_Mono, Plus_Jakarta_Sans, Playfair_Display } from "next/font/google";
 import Providers from "@/components/Providers";
 import "./globals.css";
 
@@ -37,6 +37,12 @@ const jetbrains = JetBrains_Mono({
   weight: ["500"],
 });
 
+const caveat = Caveat({
+  variable: "--font-caveat",
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+});
+
 export const metadata: Metadata = {
   title: "Kenz",
   description:
@@ -62,7 +68,7 @@ export default function RootLayout({
     <html
       lang="en"
       data-scroll-behavior="smooth"
-      className={`${jakarta.variable} ${anton.variable} ${boitroco.variable} ${hanken.variable} ${jetbrains.variable} h-full antialiased`}
+      className={`${jakarta.variable} ${anton.variable} ${boitroco.variable} ${hanken.variable} ${jetbrains.variable} ${caveat.variable} h-full antialiased`}
     >
       <body className="min-h-full">
         <Providers>{children}</Providers>

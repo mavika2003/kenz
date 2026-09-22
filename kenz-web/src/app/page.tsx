@@ -1,9 +1,8 @@
 import Nav from "@/components/Nav";
 import Hero from "@/components/Hero";
-import CinematicMoments from "@/components/CinematicMoments";
-import ExperiencesBento from "@/components/ExperiencesBento";
-import HowItWorks from "@/components/HowItWorks";
-import NeighborhoodsSection from "@/components/NeighborhoodsSection";
+import WhatsOnSection from "@/components/WhatsOnSection";
+import ItinerariesSection from "@/components/ItinerariesSection";
+import Dubai101Section from "@/components/Dubai101Section";
 import Footer from "@/components/Footer";
 
 export default function Home() {
@@ -13,10 +12,9 @@ export default function Home() {
       <Nav overlay />
       <main className="overflow-x-hidden">
         <Hero />
-        <CinematicMoments />
-        <ExperiencesBento />
-        <HowItWorks />
-        <NeighborhoodsSection />
+        <WhatsOnSection />
+        <ItinerariesSection />
+        <Dubai101Section />
       </main>
       <Footer />
     </>

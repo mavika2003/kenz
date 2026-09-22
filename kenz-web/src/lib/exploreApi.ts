@@ -272,31 +272,59 @@ function inferGeoapifyCategory(cats: string[]): ExploreCategory {
   return "all";
 }
 
-/** Fallback image using loremflickr keyword search (no API key needed) */
+const STOCK = {
+  cafes: [
+    "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=1400&q=80",
+    "https://images.unsplash.com/photo-1509042239860-f550ce710b41?auto=format&fit=crop&w=1400&q=80",
+    "https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=1400&q=80",
+    "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?auto=format&fit=crop&w=1400&q=80",
+    "https://images.unsplash.com/photo-1445116572660-236099ec97a0?auto=format&fit=crop&w=1400&q=80",
+  ],
+  restaurants: [
+    "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1400&q=80",
+    "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1400&q=80",
+    "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=1400&q=80",
+    "https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=1400&q=80",
+    "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=1400&q=80",
+    "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=1400&q=80",
+    "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1400&q=80",
+  ],
+  museums: [
+    "https://images.unsplash.com/photo-1518998053901-5348d3961a04?auto=format&fit=crop&w=1400&q=80",
+    "https://images.unsplash.com/photo-1578662996442-48f60103fc96?auto=format&fit=crop&w=1400&q=80",
+  ],
+  parks: [
+    "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1400&q=80",
+    "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=1400&q=80",
+  ],
+  shopping: [
+    "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=1400&q=80",
+    "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1400&q=80",
+  ],
+  beaches: [
+    "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1400&q=80",
+    "https://images.unsplash.com/photo-1506953823976-52e1fdc0148a?auto=format&fit=crop&w=1400&q=80",
+  ],
+  all: [
+    "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=1400&q=80",
+    "https://images.unsplash.com/photo-1518684079-3c830dcef090?auto=format&fit=crop&w=1400&q=80",
+  ],
+} as const;
+
+function hashName(name: string) {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
+  return h;
+}
+
+/** Unique Unsplash stills so listings never share one placeholder photo. */
+export function stockPlaceImage(name: string, category: ExploreCategory = "all"): string {
+  const pool = STOCK[category] ?? STOCK.all;
+  return pool[hashName(name) % pool.length];
+}
+
 function fallbackImage(name: string, category: ExploreCategory): string {
-  const catTag =
-    category === "cafes"
-      ? "cafe,coffee"
-      : category === "restaurants"
-        ? "restaurant,food"
-        : category === "museums"
-          ? "museum"
-          : category === "parks"
-            ? "park,garden"
-            : category === "shopping"
-              ? "mall,shopping"
-              : category === "beaches"
-                ? "beach,sea"
-                : "place";
-
-  const nameTags = name
-    .replace(/[^a-zA-Z0-9 ]/g, "")
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .join(",");
-
-  return `https://loremflickr.com/600/400/${encodeURIComponent(`${nameTags},${catTag},dubai`)}`;
+  return stockPlaceImage(name, category);
 }
 
 export function pickImage(
